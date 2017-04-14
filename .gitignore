@@ -1,0 +1,6 @@
+/cmake-build-debug/
+/CMakeLists.txt
+*.swp
+*.bin
+/obj/
+/.idea/
