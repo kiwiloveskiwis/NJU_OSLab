@@ -119,7 +119,7 @@ gdb:
 	$(GDB) $(GDB_OPTIONS)
 
 submit:
-	cd .. && tar cvj $(shell pwd | grep -o '[^/]*$$') > 151250104.tar.bz2
+	git ls-files | tar zcf 151250104.tar.gz -T - .git
 
 clean:
 	@rm -rf $(OBJ_DIR) 2> /dev/null
