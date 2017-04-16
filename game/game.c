@@ -43,16 +43,14 @@ void main_loop(void) {
 	while (TRUE) {
 		hangman_init();
 		while (!check_win() && count_down > 0 && get_miss() < MISS_END) {
-			wait_for_interrupt();
-			disable_interrupt();
-
+            // TODO: possible race conditions here
 			if (now == tick) {
-				enable_interrupt();
+                sys_sleep();
 				continue;
 			}
 			my_assert(now < tick);
 			target = tick; 
-			enable_interrupt();
+			// TODO: enable_interrupt();
 
 			redraw = FALSE;
 
@@ -83,7 +81,7 @@ void main_loop(void) {
 		else if(check_win()) draw_win();
 		else if(get_miss() >= MISS_END) draw_fail("The man was hung to death. CRUEL YOU");
 
-		enable_interrupt();
+		// TODO: enable_interrupt();
 		while(TRUE) {
 			if(query_key('r' - 'a')) break;
 		}
@@ -118,12 +116,11 @@ bool check_win() {
 	return TRUE;
 }
 
-void game_main() {
-    do_timer = (timer_event);
-    do_keyboard = (keyboard_event);
+int main() {
+	sys_timer(timer_event);
+	sys_keyboard(keyboard_event);
 
     printk("game start!\n");
-    enable_interrupt();
 
     main_loop();
     my_assert(0);

@@ -1,6 +1,7 @@
 #include <inc/memlayout.h>
 #include <inc/x86.h>
 #include <kernel/trap.h>
+#include <inc/syscall.h>
 
 //
 struct Segdesc gdt[6] =
@@ -92,6 +93,12 @@ void trap(struct Trapframe *tf) {
     my_assert(!(read_eflags() & FL_IF));
 
     switch (tf->tf_trapno) {
+        case T_ILLOP:
+            printk("Illegal opcode at 0x%x.\n", tf->tf_eip);
+            my_assert(0);
+        case T_GPFLT:
+            printk("General protection fault at 0x%x.\n", tf->tf_eip);
+            my_assert(0);
         case T_SYSCALL:
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;
@@ -105,12 +112,9 @@ void trap(struct Trapframe *tf) {
             if (do_keyboard != NULL) do_keyboard(code);
             break;
         }
+        case IRQ_OFFSET + IRQ_IDE: break;   // ignore IDE IRQ
         default:
-            printk("Unknown interrupt #%d (err=0x%x).\n", tf->tf_trapno, tf->tf_err);
+            printk("Unknown interrupt #%d (err=0x%x) at 0x%x.\n", tf->tf_trapno, tf->tf_err, tf->tf_eip);
             my_assert(0);
     }
-}
-
-uint32_t syscall_handler(struct Trapframe *tf) {
-    return 0;
 }

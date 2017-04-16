@@ -9,12 +9,12 @@
 #define SCR_SIZE ((SCR_WIDTH) * (SCR_HEIGHT))
 #define VMEM_ADDR  ((uint8_t*)0xA0000)
 
-extern uint8_t *vmem;
+extern uint8_t vbuf[SCR_SIZE];
 
 static inline void
 draw_pixel(int x, int y, int color) {
 	my_assert(x >= 0 && y >= 0 && x < SCR_HEIGHT && y < SCR_WIDTH);
-	vmem[(x << 8) + (x << 6) + y] = color;
+	vbuf[(x << 8) + (x << 6) + y] = (uint8_t) color;
 }
 
 void prepare_buffer(void);

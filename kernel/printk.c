@@ -50,13 +50,11 @@ void vfprintf(void (*printer)(char), const char *ctl, va_list arg) {
 
 extern void serial_printc(char);
 
-/* __attribute__((__noinline__))  here is to disable inlining for this function to avoid some optimization problems for gcc 4.7 */
-void __attribute__((__noinline__)) 
-printk(const char *ctl, ...) {
+void printk(const char *ctl, ...) {
 	va_list arg;
 	va_start(arg, ctl);
 	vfprintf(serial_printc, ctl, arg);
-	
+	va_end(arg);
 }
 
 char *convert(unsigned int num, int base) { 

@@ -28,7 +28,7 @@ int get_miss(void) {
 
 void
 update_keypress(void) {
-	disable_interrupt();
+	// TODO: disable_interrupt();
 
 	for(int i = 0; i < NR_KEY; i++) {
 		if(!query_key(i)) continue;
@@ -55,7 +55,7 @@ update_keypress(void) {
 		if(letter_known[ans[i] - 'a'] == IN_WORD) show_str[i] = ans[i];
 	}
 
-	enable_interrupt();
+	// TODO: enable_interrupt();
 }
 
 

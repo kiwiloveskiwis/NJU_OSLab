@@ -2,19 +2,16 @@
 #include <inc/video.h>
 #include <inc/string.h>
 #include <inc/font.h>
+#include <inc/syscall.h>
 
-
-uint8_t *vmem = VMEM_ADDR;
-static uint8_t vbuf[SCR_SIZE];
+uint8_t vbuf[SCR_SIZE];
 
 void prepare_buffer() {
-	vmem = vbuf;
-	memset(vmem, 0, SCR_SIZE);
+	memset(vbuf, 0, SCR_SIZE);
 }
 
 void display_buffer() {
-	vmem = VMEM_ADDR;
-	asm volatile ("cld; rep movsl" : : "c"(SCR_SIZE / 4), "S"(vbuf), "D"(vmem));	
+	sys_display(vbuf);
 }
 
 void
