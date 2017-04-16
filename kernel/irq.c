@@ -1,9 +1,8 @@
 #include <inc/x86.h>
-#include <inc/irq.h>
+#include <inc/trap.h>
 
 #define IO_PIC1 0x20
 #define IO_PIC2 0xA0
-#define IRQ_OFFSET 0x20
 #define IRQ_SLAVE 2
 
 #define KEYBOARD_IRQ_BIT 0x1

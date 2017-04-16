@@ -2,9 +2,10 @@
 #include <inc/common.h>
 #include <inc/game.h>
 #include <inc/string.h>
-#include <inc/irq.h>
 #include <inc/assert.h>
 #include <game/sel_words.h>
+#include <inc/syscall.h>
+#include <kernel/trap.h>
 
 #define FPS 30
 
@@ -17,14 +18,13 @@ bool check_win();
 
 volatile int tick = 0;
 char * ans, * show_str, wrong_guess[26];
-bool hide[20];
 int count_down;
 
 void timer_event(void) {
 	tick ++;
 }
 
-static int real_fps; 
+static int real_fps;
 
 void set_fps(int value) {
 	real_fps = value;
@@ -118,3 +118,13 @@ bool check_win() {
 	return TRUE;
 }
 
+void game_main() {
+    do_timer = (timer_event);
+    do_keyboard = (keyboard_event);
+
+    printk("game start!\n");
+    enable_interrupt();
+
+    main_loop();
+    my_assert(0);
+}

@@ -1,7 +1,6 @@
 #include <inc/game.h>
 #include <inc/common.h>
 #include <inc/string.h>
-#include <inc/adt/linklist.h>
 #include <inc/video.h>
 #include <inc/assert.h>
 #include <inc/x86.h>

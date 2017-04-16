@@ -3,7 +3,6 @@
 
 #include <inc/types.h>
 #include <inc/cpu.h>
-#include <inc/irq.h>
 
 void init_serial();
 

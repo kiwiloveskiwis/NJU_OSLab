@@ -1,11 +1,10 @@
 #include <inc/types.h>
 #include <inc/x86.h>
-#include <inc/irq.h>
+#include <inc/syscall.h>
 
 #define PORT_CH_0 0x40
 #define PORT_CMD 0x43
 #define PIT_FREQUENCE 1193182
-// #define HZ 100
 
 union CmdByte {
 	struct {

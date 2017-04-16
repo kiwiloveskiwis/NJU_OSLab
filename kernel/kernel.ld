@@ -4,7 +4,7 @@ OUTPUT_FORMAT(
     "elf32-i386"   /* Little endian */
 )
 OUTPUT_ARCH(i386)
-ENTRY(game_init)  /* 入口函数，你可以不定义成 main，只要是代码中的符号即可 */
+ENTRY(kernel_init)  /* 入口函数，你可以不定义成 main，只要是代码中的符号即可 */
 
 SECTIONS
 {
