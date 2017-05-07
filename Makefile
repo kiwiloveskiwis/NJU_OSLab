@@ -17,6 +17,7 @@ CFLAGS += -I . #头文件搜索目录
 CFLAGS += -O0 #不开优化, 方便调试
 CFLAGS += -fno-builtin #禁止内置函数
 CFLAGS += -ggdb3 #GDB调试信息
+CFLAGS += -fno-stack-protector # Make qemu runnable on Mint
 
 QEMU_OPTIONS := -serial stdio #以标准输入输为串口(COM1)
 # QEMU_OPTIONS += -d int #输出中断信息
@@ -28,6 +29,7 @@ QEMU_DEBUG_OPTIONS += -s #GDB调试服务器: 127.0.0.1:1234
 
 GDB_OPTIONS := -ex "target remote 127.0.0.1:1234"
 GDB_OPTIONS += -ex "symbol $(KERNEL)"
+GDB_OPTIONS += -ex "b kernel_init"
 
 OBJ_DIR        := obj
 LIB_DIR        := lib

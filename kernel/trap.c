@@ -2,6 +2,7 @@
 #include <inc/x86.h>
 #include <kernel/trap.h>
 #include <inc/syscall.h>
+#include <inc/pmap.h>
 
 //
 struct Segdesc gdt[6] =
@@ -94,11 +95,16 @@ void trap(struct Trapframe *tf) {
 
     switch (tf->tf_trapno) {
         case T_ILLOP:
-            printk("Illegal opcode at 0x%x.\n", tf->tf_eip);
+            printk("----> Illegal opcode at 0x%x.\n", tf->tf_eip);
             my_assert(0);
         case T_GPFLT:
-            printk("General protection fault at 0x%x.\n", tf->tf_eip);
+            printk("----> General protection fault at 0x%x.\n", tf->tf_eip);
             my_assert(0);
+        case T_PGFLT:
+            alloc_page(rcr2(), PTE_P | PTE_W | PTE_U);
+            break;
+            // printk("----> Page fault at 0x%x, va=0x%x", tf->tf_eip, rcr2());
+            // my_assert(0);
         case T_SYSCALL:
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;
@@ -114,7 +120,7 @@ void trap(struct Trapframe *tf) {
         }
         case IRQ_OFFSET + IRQ_IDE: break;   // ignore IDE IRQ
         default:
-            printk("Unknown interrupt #%d (err=0x%x) at 0x%x.\n", tf->tf_trapno, tf->tf_err, tf->tf_eip);
+            printk("----> Unknown interrupt #%d (err=0x%x) at 0x%x.\n", tf->tf_trapno, tf->tf_err, tf->tf_eip);
             my_assert(0);
     }
 }

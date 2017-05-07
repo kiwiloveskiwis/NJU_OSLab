@@ -7,5 +7,6 @@ int abort(const char *, int);
 #define my_assert(cond) \
 	((cond) ? (0) : (abort(__FILE__, __LINE__)))
 
+
 #endif
 

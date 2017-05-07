@@ -3,6 +3,7 @@
 #include <inc/string.h>
 #include <inc/video.h>
 #include <inc/cpu.h>
+#include <inc/memlayout.h>
 #include "trap.h"
 
 void sys_vprintk(const char *ctl, va_list arg) {
@@ -20,7 +21,7 @@ void sys_keyboard(void (*handler)(int)) {
 }
 
 void sys_display(uint8_t *buffer) {
-    memcpy(VMEM_ADDR, buffer, SCR_SIZE);
+    memcpy(KERNBASE + VMEM_ADDR, buffer, SCR_SIZE);
 }
 
 void sys_sleep() {

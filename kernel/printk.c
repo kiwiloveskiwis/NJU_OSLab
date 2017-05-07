@@ -64,7 +64,7 @@ char *convert(unsigned int num, int base) {
 
     ptr = &buffer[49]; 
     *ptr = '\0'; 
-    do{ 
+    do {
         *--ptr = Representation[num % base]; 
         num /= base; 
     } while(num != 0); 
