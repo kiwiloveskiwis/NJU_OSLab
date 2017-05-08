@@ -48,11 +48,11 @@ void alloc_page(uintptr_t va, uint32_t flags) {
 //
 pte_t * pgdir_walk(pde_t *pgdir, const void *va, int create) {
     // TODO: add create condition and test it
-    struct PageInfo* pg;
+
     create = false;
     if(!(pgdir[PDX(va)] & PTE_P) && !create) return NULL;
 
-    pte_t* page_vmem = pgdir[PDX(va)] + KERNBASE;
+    pte_t* page_vmem = (pte_t *) pgdir[PDX(va)] + KERNBASE;
     if(!(page_vmem[PTX(va)] & PTE_P) && !create) return  NULL;
     else return page_vmem + PTX(va);
 }

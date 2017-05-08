@@ -4,6 +4,7 @@
 #include <inc/x86.h>
 #include <inc/game.h>
 #include <inc/timer.h>
+#include <inc/assert.h>
 #include <inc/pcb.h>
 #include <assert.h>
 #include <memory.h>
@@ -11,7 +12,7 @@
 #include <inc/elf.h>
 #include "trap.h"
 
-extern void init_intr();
+extern void pic_init();
 extern void main_loop();
 
 #define SECTCOUNT 1
@@ -31,15 +32,16 @@ uintptr_t userprog_load(uint32_t offset) {
 			my_assert(ide_read((void *) ph->p_pa, offset + ph->p_offset, ph->p_filesz) == E_SUCCESS);
 			memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
 		}
-	printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry);
+	printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
 	return elfheader->e_entry; // would be eip of pcb_init
 }
 
 void kernel_init() {
     printk("\nKernel init\n");
+    panic("Test panic");
 	init_serial();
 	init_timer();
-	init_intr();
+	pic_init();
 	trap_init();
 
 	struct PCB userprog;

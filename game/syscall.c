@@ -90,6 +90,10 @@ void sys_display(uint8_t *buffer) {
     my_assert(do_syscall1(SYS_display, (uint32_t) buffer) == 0);
 }
 
+__attribute__((noreturn)) void sys_crash() {
+    for (;;) do_syscall0(SYS_crash);
+}
+
 void sys_sleep() {
     my_assert(do_syscall0(SYS_sleep) == 0);
 }

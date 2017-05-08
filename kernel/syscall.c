@@ -30,6 +30,10 @@ void sys_sleep() {
     disable_interrupt();
 }
 
+__attribute__((noreturn)) void sys_crash() {
+    for (;;) __asm __volatile("cli; hlt");
+}
+
 uint32_t syscall_handler(struct Trapframe *tf) {
 #define arg1 tf->tf_regs.reg_edx
 #define arg2 tf->tf_regs.reg_ecx
@@ -52,6 +56,9 @@ uint32_t syscall_handler(struct Trapframe *tf) {
         case SYS_sleep:
             sys_sleep();
             return 0;
+        case SYS_crash:
+            sys_crash();
+            return 0; // never exec
         default:
             return (uint32_t) -1;
     }

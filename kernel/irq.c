@@ -9,7 +9,7 @@
 #define TIME_IRQ_BIT 0x2
 
 void 
-init_intr(void) {
+pic_init(void) {
 	// modify interrupt masks
 /*
 	outb(IO_PIC1 + 1, 0xFF ^ KEYBOARD_IRQ_BIT ^ TIME_IRQ_BIT);

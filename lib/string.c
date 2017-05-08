@@ -1,5 +1,9 @@
 #include <inc/common.h>
 #include <inc/string.h>
+#include <inc/stdarg.h>
+#include <inc/syscall.h>
+
+// extern void sys_crash() __attribute__((noreturn));
 
 char *itoa(int a) {
 	static char buf[30];
@@ -26,4 +30,24 @@ size_t strlen(const char *str) {
 
 void strcpy(char *d, const char *s) {
 	memcpy(d, s, strlen(s) + 1);
+}
+
+void _warn(const char* file, int line, const char* format, ...) {
+	printk("Warning (%s:%d): ", file, line);
+	va_list args;
+	va_start(args, format);
+	printk(format, args);
+	va_end(args);
+	printk("\n");
+}
+
+void _panic(const char* file, int line, const char* format, ...) {
+	__asm __volatile("cld");
+	printk("Fatal (%s:%d): ", file, line);
+	va_list args;
+	va_start(args, format);
+	printk(format, args);
+	va_end(args);
+	printk("\n");
+	sys_crash();
 }
