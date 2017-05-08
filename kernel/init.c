@@ -37,13 +37,16 @@ uintptr_t userprog_load(uint32_t offset) {
 }
 
 void kernel_init() {
-    printk("\nKernel init\n");
+    printk("Kernel init\n");
 	init_serial();
 	init_timer();
 	pic_init();
+	printk("\n3\n");
 	trap_init();
 
 	struct PCB userprog;
+
 	pcb_init(&userprog, 0x8048000, userprog_load(300 * SECTSIZE), 2 | FL_IF);
+
 	pcb_exec(&userprog);
 } // ﻿0x1000000 = 2^24   2^9*2^8

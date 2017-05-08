@@ -3,13 +3,40 @@
 
 #include "types.h"
 #include "trap.h"
+#include "pmap.h"
 
 #define KSTACK_SIZE 4096
+#define UPCB_NUM (USER_MEMSIZE / (0x1 << PDXSHIFT))
+
+
+enum {
+    PCB_FREE = 0,
+    PCB_DYING,
+    PCB_RUNNABLE,
+    PCB_RUNNING,
+    PCB_NOT_RUNNABLE
+};
+
 struct PCB {
+    uint32_t pid;
+    uint32_t parent_pid;
+    uint32_t status;
+    uint32_t runned_time;
+    uintptr_t pcb_pgdir;
     struct Trapframe tf;
     uint8_t kstack[KSTACK_SIZE];
 
 };
+
+
+
+/* 进程在内核状态下的栈
+进程的标识符
+进程的父进程的标识符
+进程的状态（正在执行、可以执行、正在休眠、不可执行等）
+进程已经运行的时间片数量
+进程的页目录表的地址
+ */
 
 void pcb_init(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags);
 

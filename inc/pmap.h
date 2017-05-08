@@ -13,6 +13,10 @@
 extern size_t npages;
 extern struct PageInfo *pages;
 
+#define MAX_MEM     0x8000000
+#define KERN_MEM    0x1000000
+#define USER_MEMSIZE   (MAX_MEM - KERN_MEM)  // 128 - 16 MB
+
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --
  * and returns the corresponding physical address.  It panics if you pass it a

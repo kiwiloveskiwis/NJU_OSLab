@@ -2,9 +2,7 @@
 #include <inc/memlayout.h>
 #include <inc/pmap.h>
 
-#define MAX_MEM     0x8000000
-#define KERN_MEM    0x1000000
-#define USER_MEMSIZE   0x7000000  // 128 - 16 MB
+
 
 size_t npages;			// Amount of physical memory (in pages)
 
