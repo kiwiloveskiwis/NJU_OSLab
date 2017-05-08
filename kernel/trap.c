@@ -95,11 +95,9 @@ void trap(struct Trapframe *tf) {
 
     switch (tf->tf_trapno) {
         case T_ILLOP:
-            printk("----> Illegal opcode at 0x%x.\n", tf->tf_eip);
-            my_assert(0);
+            panic("----> Illegal opcode at 0x%x.\n", tf->tf_eip);
         case T_GPFLT:
-            printk("----> General protection fault at 0x%x.\n", tf->tf_eip);
-            my_assert(0);
+            panic("----> General protection fault at 0x%x.\n", tf->tf_eip);
         case T_PGFLT:
             alloc_page(rcr2(), PTE_P | PTE_W | PTE_U);
             break;
@@ -120,7 +118,6 @@ void trap(struct Trapframe *tf) {
         }
         case IRQ_OFFSET + IRQ_IDE: break;   // ignore IDE IRQ
         default:
-            printk("----> Unknown interrupt #%d (err=0x%x) at 0x%x.\n", tf->tf_trapno, tf->tf_err, tf->tf_eip);
-            my_assert(0);
+            panic("----> Unknown interrupt #%d (err=0x%x) at 0x%x.\n", tf->tf_trapno, tf->tf_err, tf->tf_eip);
     }
 }

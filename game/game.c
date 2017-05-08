@@ -123,5 +123,5 @@ int main() {
     printk("game start!\n");
 
     main_loop();
-    my_assert(0);
+    panic("main_loop returns");
 }

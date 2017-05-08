@@ -38,7 +38,6 @@ uintptr_t userprog_load(uint32_t offset) {
 
 void kernel_init() {
     printk("\nKernel init\n");
-    panic("Test panic");
 	init_serial();
 	init_timer();
 	pic_init();
