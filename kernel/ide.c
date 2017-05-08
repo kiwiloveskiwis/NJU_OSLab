@@ -24,6 +24,7 @@ _Static_assert(!(SECTSIZE & (SECTSIZE - 1)), "SECTSIZE must be a power of 2!");
 int ide_read(void *dst, uint32_t offset, uint32_t count) {
     my_assert(!(offset & 3));  // assert: aligned at 4 byte
     my_assert(!(count & 3));
+
     for (uint32_t i = offset & -SECTSIZE, end = offset + count; i < end;) {
         int r;
         ide_wait_ready(false);
@@ -34,7 +35,9 @@ int ide_read(void *dst, uint32_t offset, uint32_t count) {
         outb(0x1F5, (uint8_t) (secno >> 16));
         outb(0x1F6, (uint8_t) (0xE0 | (secno >> 24)));
         outb(0x1F7, 0x20);	// CMD 0x20 means read sector
-        if ((r = ide_wait_ready(1)) < 0) return r;
+        if ((r = ide_wait_ready(1)) < 0) {
+            panic("(r & (IDE_DF|IDE_ERR)) != 0 r = %d", r);
+        }
         int32_t n = offset - i;
         if (n > 0) {
             for (uint32_t j = 0; j < n; j += 4) inl(0x1F0); // seek

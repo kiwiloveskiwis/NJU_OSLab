@@ -1,2 +1,3 @@
-break kernel_init
+break load_updir
+
 

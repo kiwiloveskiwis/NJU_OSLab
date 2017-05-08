@@ -8,14 +8,15 @@
 static uint32_t curr_pid;
 struct PCB user_pcbs[UPCB_NUM];
 
+
 uint32_t get_pid() {
     return curr_pid;
 }
 
 void pcb_init(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
-
     pcb->status = PCB_RUNNING;
     pcb->runned_time = 0;
+    load_updir(pcb->pid);
 
     memset(&pcb->tf, 0, sizeof(pcb->tf));
     pcb->tf.tf_ds = pcb->tf.tf_es = pcb->tf.tf_ss = GD_UD | 3;

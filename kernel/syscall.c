@@ -57,6 +57,7 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             sys_sleep();
             return 0;
         case SYS_crash:
+            printk("Crashed.\n");
             sys_crash();
             return 0; // never exec
         default:

@@ -6,7 +6,7 @@
 #include "pmap.h"
 
 #define KSTACK_SIZE 4096
-#define UPCB_NUM (USER_MEMSIZE / (0x1 << PDXSHIFT))
+#define UPCB_NUM 64
 
 
 enum {
@@ -37,6 +37,8 @@ struct PCB {
 进程已经运行的时间片数量
 进程的页目录表的地址
  */
+
+uint32_t get_pid();
 
 void pcb_init(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags);
 

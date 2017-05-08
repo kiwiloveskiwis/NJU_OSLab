@@ -29,7 +29,8 @@ QEMU_DEBUG_OPTIONS += -s #GDB调试服务器: 127.0.0.1:1234
 
 GDB_OPTIONS := -ex "target remote 127.0.0.1:1234"
 GDB_OPTIONS += -ex "symbol $(KERNEL)"
-GDB_OPTIONS += -ex "b kernel_init"
+GDB_OPTIONS += -ex "b load_updir"
+
 
 OBJ_DIR        := obj
 LIB_DIR        := lib

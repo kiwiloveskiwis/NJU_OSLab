@@ -3,6 +3,7 @@
 #include <kernel/trap.h>
 #include <inc/syscall.h>
 #include <inc/pmap.h>
+#include <inc/pcb.h>
 
 //
 struct Segdesc gdt[6] =
@@ -84,6 +85,7 @@ void trap_init(void) {
     lidt(&idt_pd);
 }
 
+
 void trap(struct Trapframe *tf) {
     // The environment may have set DF and some versions
     // of GCC rely on DF being clear
@@ -99,10 +101,10 @@ void trap(struct Trapframe *tf) {
         case T_GPFLT:
             panic("----> General protection fault at 0x%x.\n", tf->tf_eip);
         case T_PGFLT:
-            alloc_page(rcr2(), PTE_P | PTE_W | PTE_U);
-            break;
-            // printk("----> Page fault at 0x%x, va=0x%x", tf->tf_eip, rcr2());
-            // my_assert(0);
+
+            alloc_page(rcr2(), PTE_P | PTE_W | PTE_U, get_pid());
+            printk("----> Page fault at 0x%x, va=0x%x, pid=%d.\n", tf->tf_eip, rcr2(), get_pid());
+            // panic("");
         case T_SYSCALL:
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;

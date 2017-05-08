@@ -9,13 +9,27 @@
 #include "mmu.h"
 #include "common.h"
 #include "memlayout.h"
+#include "x86.h"
+#include <inc/pcb.h>
 
-extern size_t npages;
-extern struct PageInfo *pages;
+
 
 #define MAX_MEM     0x8000000
 #define KERN_MEM    0x1000000
 #define USER_MEMSIZE   (MAX_MEM - KERN_MEM)  // 128 - 16 MB
+#define USER_DIR_NUM (USER_MEMSIZE >> PTSHIFT)
+#define UPDIR_NUM 64
+
+extern size_t npages;
+extern struct PageInfo *pages;
+extern pte_t user_pgdir[UPDIR_NUM][NPDENTRIES];
+
+static inline void load_updir(int pid) {
+    uint32_t dir_addr = ((uint32_t)user_pgdir[pid]) - KERNBASE;
+    // lcr3((uint32_t)entry_pgdir - KERNBASE);
+    lcr3(dir_addr);
+}
+
 
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --
@@ -56,6 +70,8 @@ static inline struct PageInfo* pa2page(physaddr_t pa) {
     return &pages[PGNUM(pa)];
 }
 
+
+
 static inline void*
 page2kva(struct PageInfo *pp)
 {
@@ -63,7 +79,10 @@ page2kva(struct PageInfo *pp)
 }
 
 //pte_t *pgdir_walk(pde_t *pgdir, const void *va, int create);
-void alloc_page(uintptr_t va, uint32_t flags);
+
+void mem_init();
+
+void alloc_page(uintptr_t va, uint32_t flags, uint32_t pid);
 
 
 #endif //OSLAB_PMAP_H
