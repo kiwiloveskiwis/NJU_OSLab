@@ -10,7 +10,9 @@ size_t npages;			// Amount of physical memory (in pages)
 extern pde_t entry_pgdir[NPDENTRIES];
 struct PageInfo *pages;					// Physical page state array
 
+__attribute__((__aligned__(PGSIZE)))
 pte_t user_pgdir[UPDIR_NUM][NPDENTRIES];    //  pgdir no more than pcb TODO: check pointer
+
 __attribute__((__aligned__(PGSIZE))) // IMPORTANT!!! may cause bugs
 static pte_t user_pgtable[USER_DIR_NUM][NPTENTRIES]; // restricted by qemu memory (112 MB for user)
 static uint32_t userpg_used[UPCB_NUM];

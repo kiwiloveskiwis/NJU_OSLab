@@ -1,7 +1,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
-#include "common.h"
+#include "inc/common.h"
 #define PROB_HIDE 70
 #define NR_KEY 26
 #define COUNTDOWN 50
@@ -9,7 +9,7 @@
 
 enum letter_state {UNKNOWN, IN_WORD, OUT_WORD};
 
-char * ans, * show_str, wrong_guess[26];
+char ans[30], show_str[30], wrong_guess[26];
 int letter_known[NR_KEY];
 int count_down;
 

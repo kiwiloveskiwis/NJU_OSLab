@@ -1,6 +1,6 @@
 #include <inc/x86.h>
 #include <inc/common.h>
-#include <inc/game.h>
+#include <game/game.h>
 #include <inc/string.h>
 #include <inc/assert.h>
 #include <game/sel_words.h>
@@ -17,7 +17,7 @@ void hangman_init();
 bool check_win();
 
 volatile int tick = 0;
-char * ans, * show_str, wrong_guess[26];
+char ans[30], show_str[30], wrong_guess[26];
 int count_down;
 
 void timer_event(void) {
@@ -92,7 +92,7 @@ void hangman_init() {
 	reset_miss();
 	reset_hit();
 	now = tick = 0;
-	ans = sel_words[rand() % NR_WORDS];
+	strcpy(ans, sel_words[rand() % NR_WORDS]);
 	count_down = COUNTDOWN;
 	memset(letter_known, FALSE, sizeof(letter_known));
 	for(int i = 0; i < NR_KEY; i++) release_key(i);

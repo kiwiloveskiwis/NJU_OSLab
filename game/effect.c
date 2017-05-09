@@ -1,10 +1,10 @@
-#include <inc/game.h>
+#include <game/game.h>
 #include <inc/common.h>
 #include <inc/string.h>
 #include <inc/video.h>
 #include <inc/assert.h>
 #include <inc/x86.h>
-#include <inc/game.h>
+#include <game/game.h>
 
 static int hit = 0, miss = 0;
 

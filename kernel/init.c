@@ -2,7 +2,6 @@
 #define FALSE 0
 #include <inc/common.h>
 #include <inc/x86.h>
-#include <inc/game.h>
 #include <inc/timer.h>
 #include <inc/assert.h>
 #include <inc/pcb.h>

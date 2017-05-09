@@ -1,4 +1,4 @@
-#include <inc/game.h>
+#include <game/game.h>
 #include <inc/string.h>
 #include <inc/video.h>
 
