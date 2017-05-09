@@ -35,7 +35,7 @@ uintptr_t userprog_load(uint32_t offset) {
 			memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
 		}
 	// printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
-	return elfheader->e_entry; // would be eip of pcb_init
+	return elfheader->e_entry; // would be eip of pcb_enter
 }
 
 
@@ -48,9 +48,10 @@ void kernel_init() {
 	pic_init();
 	trap_init();
 	mem_init();
+	pcb_init();
 
 	struct PCB userprog;
-	pcb_init(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
+	pcb_enter(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
 
 	pcb_exec(&userprog);
 } // ﻿0x1000000 = 2^24   2^9*2^8

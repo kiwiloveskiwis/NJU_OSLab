@@ -23,12 +23,15 @@ void memset(void *dest, int data, size_t size) {
 }
 
 size_t strlen(const char *str) {
+//	my_assert((uint32_t) str != 0);
 	int len = 0;
 	while (*str ++) len ++;
 	return len;
 }
 
 void strcpy(char *d, const char *s) {
+//	my_assert((uint32_t) d != 0);
+//	my_assert((uint32_t) s != 0);
 	memcpy(d, s, strlen(s) + 1);
 }
 

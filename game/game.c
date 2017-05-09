@@ -11,7 +11,7 @@
 
 extern size_t strlen(const char *);
 extern void strcpy(char *d, const char *s);
-extern char * sel_words[NR_WORDS];
+extern const char * sel_words[NR_WORDS];
 
 void hangman_init();
 bool check_win();
@@ -45,7 +45,7 @@ void main_loop(void) {
 		while (!check_win() && count_down > 0 && get_miss() < MISS_END) {
             // TODO: possible race conditions here
 			if (now == tick) {
-                sys_sleep();
+                sys_wait_intr();
 				continue;
 			}
 			my_assert(now < tick);
@@ -104,6 +104,7 @@ void hangman_init() {
 		}
 	} 
 	strcpy(show_str, ans);
+
 	for(int i = 0; i < strlen(ans); i++) {
 		if(letter_known[ans[i] - 'a'] == UNKNOWN) show_str[i] = '_';
 	}
@@ -119,6 +120,7 @@ bool check_win() {
 int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
+    // sys_sleep(0x1000);
 
     printk("game start! SYS_pid = %d\n", sys_getpid());
 

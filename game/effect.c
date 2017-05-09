@@ -39,6 +39,8 @@ update_keypress(void) {
 		}
 		bool found; // unknown key already pressed
 
+		my_assert((uint32_t) ans != 0);
+
 		for(int j = 0; j < strlen(ans); j++) {
 			if(ans[j] - 'a' != i) continue; 
 			found = TRUE; // found matching key
@@ -50,7 +52,8 @@ update_keypress(void) {
 			// printk("Wrong letter!\n");
 		}
 	}
-	
+
+	my_assert((uint32_t) ans != 0);
 	for(int i = 0; i < strlen(ans); i++) {
 		if(letter_known[ans[i] - 'a'] == IN_WORD) show_str[i] = ans[i];
 	}

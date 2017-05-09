@@ -101,14 +101,14 @@ void trap(struct Trapframe *tf) {
         case T_GPFLT:
             panic("----> General protection fault at 0x%x.\n", tf->tf_eip);
         case T_PGFLT:
-
-            alloc_page(rcr2(), PTE_P | PTE_W | PTE_U, get_pid());
             printk("----> Page fault at 0x%x, va=0x%x, pid=%d.\n", tf->tf_eip, rcr2(), get_pid());
             // panic("");
         case T_SYSCALL:
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;
         case IRQ_OFFSET + IRQ_TIMER:
+            user_pcbs[get_pid()].runned_time++;
+
             if (do_timer != NULL) do_timer();
             break;
         case IRQ_OFFSET + IRQ_KBD: {

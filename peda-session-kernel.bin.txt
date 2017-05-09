@@ -1,3 +1,2 @@
-break load_updir
-
+break *0x101d94
 

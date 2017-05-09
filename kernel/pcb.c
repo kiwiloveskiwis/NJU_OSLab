@@ -13,7 +13,14 @@ uint32_t get_pid() {
     return curr_pid;
 }
 
-void pcb_init(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
+void pcb_init(){
+    for(int i = 0; i < UPCB_NUM; i++) {
+        user_pcbs[i].status = PCB_FREE;
+        user_pcbs[i].runned_time = 0;
+    }
+}
+
+void pcb_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
     pcb->status = PCB_RUNNING;
     pcb->runned_time = 0;
     load_updir(pcb->pid);

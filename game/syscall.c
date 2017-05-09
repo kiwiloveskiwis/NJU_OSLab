@@ -98,6 +98,9 @@ __attribute__((noreturn)) void sys_crash() {
     for (;;) do_syscall0(SYS_crash);
 }
 
-void sys_sleep() {
-    my_assert(do_syscall0(SYS_sleep) == 0);
+void sys_wait_intr(){
+    do_syscall0(SYS_wait_intr);
+}
+void sys_sleep(uint32_t time) {
+    my_assert(do_syscall1(SYS_sleep, time) == 0);
 }

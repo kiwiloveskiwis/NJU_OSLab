@@ -20,7 +20,6 @@ static uint32_t userpg_used[UPCB_NUM];
 
 
 void mem_init() {
-
     uint32_t flags = PTE_P | PTE_W | PTE_U;
     for(int i = 0; i < UPCB_NUM; i++) {     // copy kernel page map
         user_pgdir[i][0] = entry_pgdir[0];  // [0, 4MB)
@@ -28,7 +27,6 @@ void mem_init() {
     }
     // panic(" Stop. ");
     alloc_page(0x8048000, flags, 0); // save in process 0
-    alloc_page(0x8048800, flags, 0); // save in process 0
 }
 
 

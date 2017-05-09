@@ -5,7 +5,9 @@
 int count_down;
 extern char wrong_guess[26];
 
-const char *end_tip = "PRESS R TO RESTART";
+const char end_tip[] = "PRESS R TO RESTART";
+const char endword[] = "Congratulations! You win.";
+const char tip[] = "Guess the word:";
 
 void draw_miss() {
 	const char *miss = itoa(get_miss());
@@ -20,7 +22,7 @@ void draw_miss() {
 
 void redraw_screen() {
 	prepare_buffer(); 
-	const char *hit, *tip = "Guess the word:";
+	char hit[30];
 #define c_width(i) (strlen(i) / 2 * 8)
 	draw_string(tip, SCR_HEIGHT / 4 - 8, SCR_WIDTH / 2 - c_width(tip), 48);
 	draw_string((char *)show_str, SCR_HEIGHT / 4 + 8, SCR_WIDTH / 2 - c_width(show_str), 48);
@@ -28,7 +30,9 @@ void redraw_screen() {
 	draw_string(itoa(last_key_code()), SCR_HEIGHT - 8, 0, 48);
 	*/
 
-	hit = itoa(get_hit());
+	strcpy(hit, itoa(get_hit()));
+
+	my_assert((uint32_t) hit != 0);
 	draw_string(hit, 0, SCR_WIDTH - strlen(hit) * 8, 10);
 	draw_miss();
 
@@ -40,6 +44,7 @@ void redraw_screen() {
 
 
 void draw_fail(char *endword) {
+
 	prepare_buffer(); 
 	draw_string(endword, SCR_HEIGHT / 2 - 12, SCR_WIDTH / 2 - c_width(endword), 14);
 	draw_string(end_tip, SCR_HEIGHT / 2, SCR_WIDTH / 2 - c_width(end_tip), 14);
@@ -47,12 +52,9 @@ void draw_fail(char *endword) {
 }
 
 void draw_win() {
-	prepare_buffer(); 
-	char * endword = "Congratulations! You win.";
-
+	prepare_buffer();
 	draw_string(endword, SCR_HEIGHT / 2 - 12, SCR_WIDTH / 2 - c_width(endword), 14);
 	draw_string(end_tip, SCR_HEIGHT / 2, SCR_WIDTH / 2 - c_width(end_tip), 14);
-
 	display_buffer(); 
 }
 #undef c_width

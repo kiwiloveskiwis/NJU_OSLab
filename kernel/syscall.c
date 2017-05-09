@@ -25,7 +25,12 @@ void sys_display(uint8_t *buffer) {
     memcpy(KERNBASE + VMEM_ADDR, buffer, SCR_SIZE);
 }
 
-void sys_sleep() {
+void sys_sleep(uint32_t time) {
+    user_pcbs[get_pid()].status = PCB_SLEEPING;
+    user_pcbs[get_pid()].wakeup_time = time;
+}
+
+void sys_wait_intr() {
     enable_interrupt();
     wait_for_interrupt();
     disable_interrupt();
@@ -55,7 +60,10 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             sys_display((uint8_t *) arg1);
             return 0;
         case SYS_sleep:
-            sys_sleep();
+            sys_sleep((uint32_t) arg1);
+            return 0;
+        case SYS_wait_intr:
+            sys_wait_intr();
             return 0;
         case SYS_crash:
             printk("Crashed.\n");
