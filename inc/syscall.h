@@ -13,6 +13,8 @@ enum {
     SYS_display,
     SYS_crash,
     SYS_sleep,
+    SYS_getpid,
+    SYS_fork,
 };
 
 void sys_vprintk(const char *ctl, va_list arg);
@@ -21,7 +23,8 @@ void sys_keyboard(void (*)(int));
 void sys_display(uint8_t *buffer);
 
 void sys_crash() __attribute__((noreturn));
-
 void sys_sleep();
+
+int sys_getpid();
 
 #endif //OSLAB_SYSCALL_H

@@ -120,7 +120,7 @@ int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
 
-    printk("game start!\n");
+    printk("game start! SYS_pid = %d\n", sys_getpid());
 
     main_loop();
     panic("main_loop returns");

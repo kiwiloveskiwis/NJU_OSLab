@@ -4,6 +4,7 @@
 #include <inc/video.h>
 #include <inc/cpu.h>
 #include <inc/memlayout.h>
+#include <inc/pcb.h>
 #include "trap.h"
 
 void sys_vprintk(const char *ctl, va_list arg) {
@@ -60,6 +61,8 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             printk("Crashed.\n");
             sys_crash();
             return 0; // never exec
+        case SYS_getpid:
+            return get_pid();
         default:
             return (uint32_t) -1;
     }

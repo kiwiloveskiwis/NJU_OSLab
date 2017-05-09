@@ -82,6 +82,10 @@ void sys_timer(void (*handler)(void)) {
     my_assert(do_syscall1(SYS_timer, (uint32_t) handler) == 0);
 }
 
+int sys_getpid() {
+    return do_syscall0(SYS_getpid);
+}
+
 void sys_keyboard(void (*handler)(int)) {
     my_assert(do_syscall1(SYS_keyboard, (uint32_t) handler) == 0);
 }
