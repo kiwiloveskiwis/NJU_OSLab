@@ -40,7 +40,6 @@ void pcb_exec(struct PCB *pcb) {
     load_updir(pcb->pcb_pgdir);
     pcb->status = PCB_RUNNING;
 
-    printk("pcb->pid = %d, curr_pid = %d\n", pcb->pid, curr_pid);
     extern struct Taskstate pts;
     pts.ts_esp0 = (uintptr_t) pcb + sizeof(struct PCB);
 
@@ -48,10 +47,10 @@ void pcb_exec(struct PCB *pcb) {
 
     __asm __volatile("movl %0,%%esp\n"
             "\tpopal\n"
-            "\tpopl %%es\n"
-            "\tpopl %%ds\n"
+            "\tpopl %%es\n"   // es = 0x23
+            "\tpopl %%ds\n"     // ds = 0x23
             "\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
-            "\tiret"
+            "\tiret"            // [esp] = 0x4ec83cf
     : : "g" (&pcb->tf) : "memory");
 
     panic("iret failed");

@@ -57,11 +57,11 @@ uint32_t sys_fork() {
     pcb_page_init(new_pid);
 
     memcpy(&user_pcbs[new_pid], &user_pcbs[old_pid], sizeof(struct PCB));
+    pmap_copy(new_pid, old_pid);
 
     user_pcbs[new_pid].tf.tf_regs.reg_eax = 0;
     user_pcbs[new_pid].pid = new_pid; // avoid overlap
-    pmap_copy(new_pid, old_pid);
-
+    user_pcbs[new_pid].status = PCB_RUNNABLE;
     printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);
     return new_pid; //
 }
@@ -71,6 +71,7 @@ __attribute__((noreturn)) void sys_crash() {
 }
 
 uint32_t syscall_handler(struct Trapframe *tf) {
+    disable_interrupt();
 #define arg1 tf->tf_regs.reg_edx
 #define arg2 tf->tf_regs.reg_ecx
 #define arg3 tf->tf_regs.reg_ebx
@@ -85,6 +86,7 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return 0;
         case SYS_fork:
             return sys_fork();
+
         case SYS_timer:
             sys_timer((void (*)(void)) arg1);
             return 0;

@@ -38,17 +38,17 @@ void alloc_page(uintptr_t va, uint32_t flags, uint32_t pid) {
     printk("%s: Allocated 4MB at 0x%x to 0x%x\n", __func__, va, KERN_MEM + (pid << PDXSHIFT));
 }
 
-void pmap_copy(int dest, int src) { // copy to 0x10000000
-    printk("curr_pgdir == 0x%x, should be 0x%x \n", rcr3(), user_pgdir[src]);
-    // my_assert((pte_t) (rcr3() & ~0x3FF)== (pte_t)user_pgdir[src]);
-    printk("0x%x\n", (uintptr_t) &user_pgtable[dest] - KERNBASE);
+void pmap_copy(int dest_pid, int src_pid) { // copy to 0x10000000
+    printk("curr_pgdir == 0x%x, should be 0x%x \n", rcr3(), user_pgdir[src_pid]);
+    // my_assert((pte_t) (rcr3() & ~0x3FF)== (pte_t)user_pgdir[src_pid]);
+    printk("0x%x\n", (uintptr_t) &user_pgtable[dest_pid] - KERNBASE);
 
     uint32_t new_addr = 0x10000000, flags = PTE_P | PTE_W | PTE_U;
-    alloc_page(new_addr, flags, dest);
+    alloc_page(new_addr, flags, dest_pid);
 
-    user_pgdir[src][PDX(new_addr)] = (pde_t) (((uintptr_t) &user_pgtable[dest] - KERNBASE) | PTE_P | PTE_W | PTE_U);
+    user_pgdir[src_pid][PDX(new_addr)] = (pde_t) (((uintptr_t) &user_pgtable[dest_pid] - KERNBASE) | PTE_P | PTE_W | PTE_U);
     memcpy((void *) new_addr, (const void *) 0x8000000, PTSIZE); // 4 MB
-    user_pgdir[src][PDX(new_addr)] = (pde_t) 0; // clean up
+    user_pgdir[src_pid][PDX(new_addr)] = (pde_t) 0; // clean up
 }
 
 

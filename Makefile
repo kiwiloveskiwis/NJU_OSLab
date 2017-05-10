@@ -29,7 +29,7 @@ QEMU_DEBUG_OPTIONS += -s #GDB调试服务器: 127.0.0.1:1234
 
 GDB_OPTIONS := -ex "target remote 127.0.0.1:1234"
 GDB_OPTIONS += -ex "symbol $(KERNEL)"
-GDB_OPTIONS += -ex "b *0x101d94"
+GDB_OPTIONS += -ex "b pcb_exec"
 
 
 OBJ_DIR        := obj

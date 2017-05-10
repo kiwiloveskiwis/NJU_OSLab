@@ -51,8 +51,7 @@ void kernel_init() {
 	pic_init();
 	trap_init();
 
-	struct PCB userprog;
-	pcb_init_p0(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
+	pcb_init_p0(&user_pcbs[0], USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
 
-	pcb_exec(&userprog);
+	pcb_exec(&user_pcbs[0]);
 } // ﻿0x1000000 = 2^24   2^9*2^8
