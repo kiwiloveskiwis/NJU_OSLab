@@ -31,6 +31,8 @@ static inline void load_updir(int pid) {
 }
 
 
+void pcb_page_init(uint32_t pid);
+
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --
  * and returns the corresponding physical address.  It panics if you pass it a
@@ -80,7 +82,7 @@ page2kva(struct PageInfo *pp)
 
 //pte_t *pgdir_walk(pde_t *pgdir, const void *va, int create);
 
-void mem_init();
+void mem_init_zero();
 
 void alloc_page(uintptr_t va, uint32_t flags, uint32_t pid);
 

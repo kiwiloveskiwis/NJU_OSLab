@@ -11,22 +11,24 @@ extern pde_t entry_pgdir[NPDENTRIES];
 struct PageInfo *pages;					// Physical page state array
 
 __attribute__((__aligned__(PGSIZE)))
-pte_t user_pgdir[UPDIR_NUM][NPDENTRIES];    //  pgdir no more than pcb TODO: check pointer
+pte_t user_pgdir[UPDIR_NUM][NPDENTRIES];    //  pgdir no more than pcb
 
 __attribute__((__aligned__(PGSIZE))) // IMPORTANT!!! may cause bugs
 static pte_t user_pgtable[USER_DIR_NUM][NPTENTRIES]; // restricted by qemu memory (112 MB for user)
 static uint32_t userpg_used[UPCB_NUM];
 
 
-
-void mem_init() {
+// page map for main process
+void mem_init_zero() {
     uint32_t flags = PTE_P | PTE_W | PTE_U;
-    for(int i = 0; i < UPCB_NUM; i++) {     // copy kernel page map
-        user_pgdir[i][0] = entry_pgdir[0];  // [0, 4MB)
-        user_pgdir[i][KERNBASE >> PDXSHIFT] = entry_pgdir[KERNBASE >> PDXSHIFT];  // [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
-    }
+    pcb_page_init(user_pcbs[0].pid); // save in process 0
     // panic(" Stop. ");
-    alloc_page(0x8048000, flags, 0); // save in process 0
+    alloc_page(0x8048000, flags, 0);
+}
+
+void pcb_page_init(uint32_t pid) { // copy kernel page dir
+    user_pgdir[pid][0] = entry_pgdir[0];  // [0, 4MB)
+    user_pgdir[pid][KERNBASE >> PDXSHIFT] = entry_pgdir[KERNBASE >> PDXSHIFT];  // [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
 }
 
 

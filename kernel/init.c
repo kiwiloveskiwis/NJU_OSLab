@@ -29,13 +29,13 @@ uintptr_t userprog_load(uint32_t offset) {
 	load_updir(get_pid());
 	for (int phnum = elfheader->e_phnum; phnum > 0; --phnum, ++ph)
 		if (ph->p_type == 1) { // ELF_PROG_LOAD
-			printk("%s: ph->p_pa = %x\n", __func__, ph->p_pa);
+			// printk("%s: ph->p_pa = %x\n", __func__, ph->p_pa);
 			my_assert(ph->p_pa >= 0x1000000);         // don't overlap kernel
 			ide_read((void *) ph->p_pa, offset + ph->p_offset, ph->p_filesz);
 			memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
 		}
 	// printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
-	return elfheader->e_entry; // would be eip of pcb_enter
+	return elfheader->e_entry; // would be eip of pcb_first_enter
 }
 
 
@@ -47,11 +47,12 @@ void kernel_init() {
 	init_timer();
 	pic_init();
 	trap_init();
-	mem_init();
-	pcb_init();
+    pcb_init_all();
+    mem_init_zero();
+
 
 	struct PCB userprog;
-	pcb_enter(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
+    pcb_first_enter(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
 
 	pcb_exec(&userprog);
 } // ﻿0x1000000 = 2^24   2^9*2^8

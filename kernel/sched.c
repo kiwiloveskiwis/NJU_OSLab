@@ -8,8 +8,8 @@ void sched_process(){ // change to another process
     for(int i = 0; i < UPCB_NUM; i++) {
         if(i == get_pid()) continue;
         if(user_pcbs[i].status == PCB_RUNNABLE)
-            // pcb_exec(i); // no return
-            panic(""); // TODO: implement this
+            pcb_exec(&user_pcbs[i]); // no return TODO: test it
+            panic("sched_process returned;");
     }
     panic("No runnable process");
 }

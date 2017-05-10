@@ -29,11 +29,13 @@ void sys_display(uint8_t *buffer) {
 void sys_sleep(uint32_t time) {
     user_pcbs[get_pid()].status = PCB_SLEEPING;
     user_pcbs[get_pid()].wakeup_time = time;
+    sched_process();
 
 }
 
 __attribute__((noreturn))
 void sys_exit() {
+
     user_pcbs[get_pid()].status = PCB_FREE;
     sched_process();
 }
@@ -43,6 +45,8 @@ void sys_wait_intr() {
     wait_for_interrupt();
     disable_interrupt();
 }
+
+
 
 __attribute__((noreturn)) void sys_crash() {
     for (;;) __asm __volatile("cli; hlt");

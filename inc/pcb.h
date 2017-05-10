@@ -43,9 +43,9 @@ extern struct PCB user_pcbs[UPCB_NUM];
 
 uint32_t get_pid();
 
-void pcb_init();
+void pcb_init_all();
 
-void pcb_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags);
+void pcb_first_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags);
 
 void pcb_exec(struct PCB *pcb);
 #endif //OSLAB_PCB_H

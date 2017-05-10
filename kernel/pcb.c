@@ -13,14 +13,14 @@ uint32_t get_pid() {
     return curr_pid;
 }
 
-void pcb_init(){
+void pcb_init_all(){
     for(int i = 0; i < UPCB_NUM; i++) {
         user_pcbs[i].status = PCB_FREE;
         user_pcbs[i].runned_time = 0;
     }
 }
 
-void pcb_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
+void pcb_first_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
     pcb->status = PCB_RUNNING;
     pcb->runned_time = 0;
     load_updir(pcb->pid);
@@ -36,8 +36,9 @@ void pcb_enter(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags) {
 
 
 void pcb_exec(struct PCB *pcb) {
-    // TODO: lcr3
-    pcb->status = PCB_FREE;
+    load_updir(pcb->pcb_pgdir);
+    // my_assert(user_pcbs[get_pid()].pcb_pgdir == pcb->pcb_pgdir);
+    pcb->status = PCB_RUNNING;
     __asm __volatile("movl %0,%%esp\n"
             "\tpopal\n"
             "\tpopl %%es\n"
@@ -45,7 +46,6 @@ void pcb_exec(struct PCB *pcb) {
             "\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
             "\tiret"
     : : "g" (&pcb->tf) : "memory");
-    panic("iret failed");  /* mostly to placate the compiler */
+    panic("iret failed");
 }
-
 
