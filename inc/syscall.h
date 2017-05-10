@@ -25,7 +25,10 @@ void sys_keyboard(void (*)(int));
 void sys_display(uint8_t *buffer);
 
 void sys_crash() __attribute__((noreturn));
+
 void sys_sleep(uint32_t time);
+
+void sys_fork();
 
 void sys_exit() __attribute__((noreturn));
 

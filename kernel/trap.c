@@ -97,18 +97,17 @@ void trap(struct Trapframe *tf) {
 
     switch (tf->tf_trapno) {
         case T_ILLOP:
-            panic("----> Illegal opcode at 0x%x.\n", tf->tf_eip);
+            panic("----> Illegal opcode at 0x%x, pid=%d.\n", tf->tf_eip, get_pid());
         case T_GPFLT:
-            panic("----> General protection fault at 0x%x.\n", tf->tf_eip);
+            panic("----> General protection fault at 0x%x, pid=%d.\n", tf->tf_eip, get_pid());
         case T_PGFLT:
             printk("----> Page fault at 0x%x, va=0x%x, pid=%d.\n", tf->tf_eip, rcr2(), get_pid());
-            // panic("");
+            panic("");
         case T_SYSCALL:
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;
         case IRQ_OFFSET + IRQ_TIMER:
             user_pcbs[get_pid()].runned_time++;
-
             if (do_timer != NULL) do_timer();
             break;
         case IRQ_OFFSET + IRQ_KBD: {

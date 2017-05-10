@@ -27,15 +27,16 @@ void sys_display(uint8_t *buffer) {
 }
 
 void sys_sleep(uint32_t time) {
+    printk("Sys sleeping\n");
     user_pcbs[get_pid()].status = PCB_SLEEPING;
     user_pcbs[get_pid()].wakeup_time = time;
     sched_process();
-
+    // TODO
 }
 
 __attribute__((noreturn))
 void sys_exit() {
-
+    printk("%s: pid %d exited gracefully.\n", __func__, get_pid());
     user_pcbs[get_pid()].status = PCB_FREE;
     sched_process();
 }
@@ -46,7 +47,23 @@ void sys_wait_intr() {
     disable_interrupt();
 }
 
+// returns child pid for parent and -1 for children
+void sys_fork() {
+    int new_pid = 0, old_pid = get_pid();
+    for(new_pid = 0; new_pid < UPCB_NUM; new_pid++)
+        if((new_pid != old_pid) && user_pcbs[new_pid].status == PCB_FREE) break;
+    if(new_pid == UPCB_NUM) panic("No Free PCB");
 
+    pcb_page_init(new_pid);
+
+    memcpy(&user_pcbs[new_pid], &user_pcbs[old_pid], sizeof(struct PCB));
+
+    user_pcbs[new_pid].tf.tf_regs.reg_eax = (uint32_t) (new_pid + 1); // TODO:
+    user_pcbs[new_pid].pid = new_pid; // avoid overlap
+    pmap_copy(new_pid, old_pid);
+
+    printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);
+}
 
 __attribute__((noreturn)) void sys_crash() {
     for (;;) __asm __volatile("cli; hlt");
@@ -64,6 +81,10 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return 0;
         case SYS_exit:
             sys_exit();
+            return 0;
+        case SYS_fork:
+            sys_fork();
+            return 0;
         case SYS_timer:
             sys_timer((void (*)(void)) arg1);
             return 0;

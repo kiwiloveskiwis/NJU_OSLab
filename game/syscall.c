@@ -102,10 +102,15 @@ __attribute__((noreturn)) void sys_exit() {
     for (;;) do_syscall0(SYS_exit);
 }
 
-
 void sys_wait_intr(){
     do_syscall0(SYS_wait_intr);
 }
+
+
+void sys_fork(){
+    do_syscall0(SYS_fork);
+}
+// WHAT???
 void sys_sleep(uint32_t time) {
-    my_assert(do_syscall1(SYS_sleep, time) == 0);
+    do_syscall1(SYS_sleep, time);
 }

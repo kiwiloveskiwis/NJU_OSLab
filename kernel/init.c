@@ -18,6 +18,9 @@ extern void main_loop();
 #define USER_START 0x8048000
 
 uintptr_t userprog_load(uint32_t offset) {
+    pcb_page_init(user_pcbs[0].pid); // save in process 0
+    alloc_page(USER_START, PTE_P | PTE_W | PTE_U, 0);
+
 	printk("Loading...%s\n", __func__);
 	uint8_t header[SECTSIZE * SECTCOUNT];
 	ide_read(header, offset, SECTSIZE * SECTCOUNT);
@@ -35,7 +38,7 @@ uintptr_t userprog_load(uint32_t offset) {
 			memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
 		}
 	// printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
-	return elfheader->e_entry; // would be eip of pcb_first_enter
+	return elfheader->e_entry; // would be eip of pcb_init_p0
 }
 
 
@@ -47,12 +50,9 @@ void kernel_init() {
 	init_timer();
 	pic_init();
 	trap_init();
-    pcb_init_all();
-    mem_init_zero();
-
 
 	struct PCB userprog;
-    pcb_first_enter(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
+	pcb_init_p0(&userprog, USER_START, userprog_load(300 * SECTSIZE), 2 | FL_IF);
 
 	pcb_exec(&userprog);
 } // ﻿0x1000000 = 2^24   2^9*2^8
