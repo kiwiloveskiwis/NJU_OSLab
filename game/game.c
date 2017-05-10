@@ -76,7 +76,7 @@ void main_loop(void) {
 			}
 		}  // Time is up, or user wins
 
-		printk("break the loop");
+		// printk("breaked the loop\n");
 		if(count_down <= 0) draw_fail("TIME IS UP! ");
 		else if(check_win()) draw_win();
 		else if(get_miss() >= MISS_END) draw_fail("The man was hung to death. CRUEL YOU");
@@ -121,6 +121,7 @@ int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
     // sys_sleep(0x1000);
+
 
     printk("game start! SYS_pid = %d\n", sys_getpid());
 

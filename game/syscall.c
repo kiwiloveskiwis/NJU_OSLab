@@ -98,6 +98,11 @@ __attribute__((noreturn)) void sys_crash() {
     for (;;) do_syscall0(SYS_crash);
 }
 
+__attribute__((noreturn)) void sys_exit() {
+    for (;;) do_syscall0(SYS_exit);
+}
+
+
 void sys_wait_intr(){
     do_syscall0(SYS_wait_intr);
 }

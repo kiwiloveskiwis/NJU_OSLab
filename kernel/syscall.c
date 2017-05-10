@@ -5,6 +5,7 @@
 #include <inc/cpu.h>
 #include <inc/memlayout.h>
 #include <inc/pcb.h>
+#include <inc/sched.h>
 #include "trap.h"
 
 void sys_vprintk(const char *ctl, va_list arg) {
@@ -28,6 +29,13 @@ void sys_display(uint8_t *buffer) {
 void sys_sleep(uint32_t time) {
     user_pcbs[get_pid()].status = PCB_SLEEPING;
     user_pcbs[get_pid()].wakeup_time = time;
+
+}
+
+__attribute__((noreturn))
+void sys_exit() {
+    user_pcbs[get_pid()].status = PCB_FREE;
+    sched_process();
 }
 
 void sys_wait_intr() {
@@ -50,6 +58,8 @@ uint32_t syscall_handler(struct Trapframe *tf) {
         case SYS_vprintk:
             sys_vprintk((const char *) arg1, (va_list) arg2);
             return 0;
+        case SYS_exit:
+            sys_exit();
         case SYS_timer:
             sys_timer((void (*)(void)) arg1);
             return 0;

@@ -8,6 +8,7 @@
 
 enum {
     SYS_vprintk = 0,
+    SYS_exit,
     SYS_timer,
     SYS_keyboard,
     SYS_display,
@@ -25,6 +26,8 @@ void sys_display(uint8_t *buffer);
 
 void sys_crash() __attribute__((noreturn));
 void sys_sleep(uint32_t time);
+
+void sys_exit() __attribute__((noreturn));
 
 void sys_wait_intr();
 
