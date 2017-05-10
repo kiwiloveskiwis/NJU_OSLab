@@ -107,10 +107,10 @@ void sys_wait_intr(){
 }
 
 
-void sys_fork(){
-    do_syscall0(SYS_fork);
+uint32_t sys_fork(){
+    return do_syscall0(SYS_fork);
 }
-// WHAT???
+
 void sys_sleep(uint32_t time) {
     do_syscall1(SYS_sleep, time);
 }

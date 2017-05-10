@@ -121,7 +121,9 @@ int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
     // sys_sleep(0x1000);
-	sys_fork();
+    int new_pid = sys_fork();
+	printk("main: new_pid = %d\n", new_pid);
+    if(new_pid != 0) sys_sleep(0x1000000); // main process sleep
 
     printk("game start! SYS_pid = %d\n", sys_getpid());
 

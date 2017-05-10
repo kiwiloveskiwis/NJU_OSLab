@@ -47,8 +47,8 @@ void sys_wait_intr() {
     disable_interrupt();
 }
 
-// returns child pid for parent and -1 for children
-void sys_fork() {
+// returns child pid for parent, 0 for children and -1 for error
+uint32_t sys_fork() {
     int new_pid = 0, old_pid = get_pid();
     for(new_pid = 0; new_pid < UPCB_NUM; new_pid++)
         if((new_pid != old_pid) && user_pcbs[new_pid].status == PCB_FREE) break;
@@ -58,11 +58,12 @@ void sys_fork() {
 
     memcpy(&user_pcbs[new_pid], &user_pcbs[old_pid], sizeof(struct PCB));
 
-    user_pcbs[new_pid].tf.tf_regs.reg_eax = (uint32_t) (new_pid + 1); // TODO:
+    user_pcbs[new_pid].tf.tf_regs.reg_eax = 0;
     user_pcbs[new_pid].pid = new_pid; // avoid overlap
     pmap_copy(new_pid, old_pid);
 
     printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);
+    return new_pid; //
 }
 
 __attribute__((noreturn)) void sys_crash() {
@@ -83,8 +84,7 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             sys_exit();
             return 0;
         case SYS_fork:
-            sys_fork();
-            return 0;
+            return sys_fork();
         case SYS_timer:
             sys_timer((void (*)(void)) arg1);
             return 0;

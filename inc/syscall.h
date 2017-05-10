@@ -28,7 +28,7 @@ void sys_crash() __attribute__((noreturn));
 
 void sys_sleep(uint32_t time);
 
-void sys_fork();
+uint32_t sys_fork();
 
 void sys_exit() __attribute__((noreturn));
 
