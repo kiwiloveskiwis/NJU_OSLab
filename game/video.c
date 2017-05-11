@@ -16,6 +16,7 @@ void display_buffer() {
 
 void
 draw_character(char ch, int x, int y, int color) {
+	// printk("%c", ch);
 	int i, j;
 	my_assert((ch & 0x80) == 0);
 	char *p = font8x8_basic[(int)ch];

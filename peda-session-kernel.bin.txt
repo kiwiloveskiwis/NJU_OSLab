@@ -1,3 +1,2 @@
-break pcb_exec
-break *0x08048c7d
+break *0x0804830a
 

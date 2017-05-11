@@ -16,7 +16,7 @@ press_key(int scan_code) {
 		if (letter_code[i] == scan_code) {
 			letter_pressed[i] = TRUE;
 #ifdef DEBUG
-			printk("%s-%d, Letter %c pressed, i == %d!\n", __FILE__, __LINE__, 'A' + i, i);
+			// printk("%s-%d, Letter %c pressed, i == %d!\n", __FILE__, __LINE__, 'A' + i, i);
 #endif
 		}
 	}
