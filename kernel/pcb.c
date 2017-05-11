@@ -20,7 +20,7 @@ void pcb_init_p0(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags)
         user_pcbs[i].runned_time = 0;
         user_pcbs[i].pid = i;
     }
-
+    my_assert(pcb->pid == 0);
     pcb->status = PCB_RUNNING;
     pcb->runned_time = 0;
     load_updir(0);
@@ -37,11 +37,13 @@ void pcb_init_p0(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags)
 
 void pcb_exec(struct PCB *pcb) {
     curr_pid = pcb->pid;
-    load_updir(pcb->pcb_pgdir);
+
+    load_updir(pcb->pid);
+
     pcb->status = PCB_RUNNING;
 
     extern struct Taskstate pts;
-    pts.ts_esp0 = (uintptr_t) pcb + sizeof(struct PCB);
+    pts.ts_esp0 = (uintptr_t) pcb + sizeof(struct PCB); // change top of stack
 
     // my_assert(user_pcbs[get_pid()].pcb_pgdir == pcb->pcb_pgdir);
 
@@ -51,6 +53,7 @@ void pcb_exec(struct PCB *pcb) {
             "\tpopl %%ds\n"     // ds = 0x23
             "\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
             "\tiret"            // [esp] = 0x4ec83cf
+
     : : "g" (&pcb->tf) : "memory");
 
     panic("iret failed");

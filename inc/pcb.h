@@ -24,11 +24,9 @@ struct PCB {
     uint32_t runned_time;
     uint32_t wakeup_time;
     uintptr_t pcb_pgdir;
-    struct Trapframe tf;
     uint8_t kstack[KSTACK_SIZE];
-
+    struct Trapframe tf;        // follows kstack & be the last
 };
-
 
 
 extern struct PCB user_pcbs[UPCB_NUM];

@@ -29,7 +29,7 @@ static int real_fps;
 void set_fps(int value) {
 	real_fps = value;
 }
-
+git
 int get_fps() {
 	return real_fps;
 }
@@ -122,9 +122,12 @@ int main() {
 	sys_keyboard(keyboard_event);
     // sys_sleep(0x1000);
     int new_pid = sys_fork();
-	printk("main: new_pid = %d\n", new_pid);
-    if(new_pid != 0) sys_sleep(0x1000000); // main process sleep
+    if (new_pid != 0) {
+		printk("main: new_pid = %d\n", new_pid);
+		sys_exit();
+	} // main process sleep
 
+// ﻿0x08048a91?
     printk("game start! SYS_pid = %d\n", sys_getpid());
 
     main_loop();

@@ -39,7 +39,7 @@ void redraw_screen() {
 	draw_string("TIME:", 0, 0, 14);
 	draw_string(itoa(count_down), 0, strlen("TIME:") * 8, 14);
 
-	display_buffer(); 
+	display_buffer();  // 0x80488d9
 }
 
 

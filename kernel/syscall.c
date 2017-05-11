@@ -46,23 +46,28 @@ void sys_wait_intr() {
     wait_for_interrupt();
     disable_interrupt();
 }
+//﻿0x8048a8b
 
 // returns child pid for parent, 0 for children and -1 for error
 uint32_t sys_fork() {
+    printk("Fork.\n");
     int new_pid = 0, old_pid = get_pid();
     for(new_pid = 0; new_pid < UPCB_NUM; new_pid++)
         if((new_pid != old_pid) && user_pcbs[new_pid].status == PCB_FREE) break;
     if(new_pid == UPCB_NUM) panic("No Free PCB");
 
-    pcb_page_init(new_pid);
 
     memcpy(&user_pcbs[new_pid], &user_pcbs[old_pid], sizeof(struct PCB));
-    pmap_copy(new_pid, old_pid);
-
-    user_pcbs[new_pid].tf.tf_regs.reg_eax = 0;
     user_pcbs[new_pid].pid = new_pid; // avoid overlap
     user_pcbs[new_pid].status = PCB_RUNNABLE;
+    user_pcbs[new_pid].tf.tf_regs.reg_eax = 0; // return 0
+   // user_pcbs[old_pid].tf.tf_esp += 0x8000000;
+    user_pcbs[new_pid].tf.tf_esp += 0x8000000;
+    user_pcbs[new_pid].tf.tf_regs.reg_ebp += 0x8000000;
+    pmap_copy(new_pid, old_pid);
+
     printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);
+    printk("Original eip == 0x%x\n", user_pcbs[old_pid].tf.tf_eip); // ﻿Original eip == 0x80488D9 is wrong
     return new_pid; //
 }
 
@@ -86,8 +91,8 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return 0;
         case SYS_fork:
             return sys_fork();
-
         case SYS_timer:
+            printk("SYS_timer: eip == 0x%x\n", tf->tf_eip);
             sys_timer((void (*)(void)) arg1);
             return 0;
         case SYS_keyboard:

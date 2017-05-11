@@ -37,7 +37,7 @@ uintptr_t userprog_load(uint32_t offset) {
 			ide_read((void *) ph->p_pa, offset + ph->p_offset, ph->p_filesz);
 			memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
 		}
-	// printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
+	printk("Loading finished!, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF0101C98
 	return elfheader->e_entry; // would be eip of pcb_init_p0
 }
 
