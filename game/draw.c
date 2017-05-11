@@ -5,9 +5,9 @@
 int count_down;
 extern char wrong_guess[26];
 
-const char end_tip[] = "PRESS R TO RESTART";
+const char end_tip[] = "PRESS_R_TO_RESTART";
 const char endword[] = "Congratulations! You win.";
-const char tip[] = "Guess the word:";
+const char tip[] = "Guess_the_word:";
 
 void draw_miss() {
 	const char *miss = itoa(get_miss());

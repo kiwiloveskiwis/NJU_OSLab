@@ -61,9 +61,6 @@ uint32_t sys_fork() {
     user_pcbs[new_pid].pid = new_pid; // avoid overlap
     user_pcbs[new_pid].status = PCB_RUNNABLE;
     user_pcbs[new_pid].tf.tf_regs.reg_eax = 0; // return 0
-   // user_pcbs[old_pid].tf.tf_esp += 0x8000000;
-    user_pcbs[new_pid].tf.tf_esp += 0x8000000;
-    user_pcbs[new_pid].tf.tf_regs.reg_ebp += 0x8000000;
     pmap_copy(new_pid, old_pid);
 
     printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);

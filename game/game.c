@@ -29,7 +29,7 @@ static int real_fps;
 void set_fps(int value) {
 	real_fps = value;
 }
-git
+
 int get_fps() {
 	return real_fps;
 }
