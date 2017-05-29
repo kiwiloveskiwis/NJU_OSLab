@@ -17,6 +17,10 @@ enum {
     SYS_wait_intr,
     SYS_getpid,
     SYS_fork,
+    SYS_sem_init,
+    SYS_sem_destroy,
+    SYS_sem_wait,
+    SYS_sem_post,
 };
 
 void sys_vprintk(const char *ctl, va_list arg);
@@ -36,5 +40,13 @@ void sys_exit() __attribute__((noreturn));
 void sys_wait_intr();
 
 int sys_getpid();
+
+int sys_sem_init(int sem);
+
+int sys_sem_destroy(int sem);
+
+int sys_sem_wait(int sem);
+
+int sys_sem_post(int sem);
 
 #endif //OSLAB_SYSCALL_H

@@ -1,6 +1,9 @@
 #ifndef __ASSERT_H__
 #define __ASSERT_H__
 
+#define E_SUCCESS 0
+#define E_INVALID -1
+
 int abort(const char *, int);
 
 void _warn(const char*, int, const char*, ...);

@@ -117,19 +117,64 @@ bool check_win() {
 	return TRUE;
 }
 
+static inline void test_printk();
+static void test_process_0();
+static void test_process_1();
+
 int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
     // sys_sleep(0x1000);
-    int new_pid = sys_fork();
-    if (new_pid != 0) {
-		printk("main: new_pid = %d\n", new_pid);
-		sys_exit();
-	} // main process sleep
+//    int new_pid = sys_fork();
+//    if (new_pid != 0) {
+//		printk("Parent: my child's pid = %d and I'm going to sleep.\n", new_pid);
+//		sys_exit();
+//	} // main process sleep
 
-// ﻿0x08048a91?
+//	else test_process0();
+	if(sys_fork() == 0) { // child
+		test_process_0();
+	} else test_process_1(); // father
+	while(true) {
+		/* do nothing */
+	}
+
     printk("game start! SYS_pid = %d\n", sys_getpid());
 
     main_loop();
     panic("main_loop returns");
+}
+
+// Unrelated to game itself
+void test_process_0(){
+
+}
+
+void test_process_1() {
+
+}
+
+static inline void test_printk() {
+	printk("Printk test begin...\n");
+	printk("the answer should be:\n");
+	printk("#######################################################\n");
+	printk("Hello, welcome to OSlab! I'm the body of the game. ");
+	printk("Bootblock loads me to the memory position of 0x100000, and Makefile also tells me that I'm at the location of 0x100000. ");
+	printk("~!@#$^&*()_+`1234567890-=...... ");
+	printk("Now I will test your printk: ");
+	printk("1 + 1 = 2, 123 * 456 = 56088\n0, -1, -2147483648, -1412505855, -32768, 102030\n0, ffffffff, 80000000, abcdef01, ffff8000, 18e8e\n");
+	printk("#######################################################\n");
+	printk("your answer:\n");
+	printk("=======================================================\n");
+	printk("%s %s%scome %co%s", "Hello,", "", "wel", 't', " ");
+	printk("%c%c%c%c%c! ", 'O', 'S', 'l', 'a', 'b');
+	printk("I'm the %s of %s. %s 0x%x, %s 0x%x. ", "body", "the game", "Bootblock loads me to the memory position of",
+		   0x100000, "and Makefile also tells me that I'm at the location of", 0x100000);
+	printk("~!@#$^&*()_+`1234567890-=...... ");
+	printk("Now I will test your printk: ");
+	printk("%d + %d = %d, %d * %d = %d\n", 1, 1, 1 + 1, 123, 456, 123 * 456);
+	printk("%d, %d, %d, %d, %d, %d\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
+	printk("%x, %x, %x, %x, %x, %x\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
+	printk("=======================================================\n");
+	printk("Test end!!! Good luck!!!\n");
 }

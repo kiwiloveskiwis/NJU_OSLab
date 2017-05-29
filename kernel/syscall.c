@@ -110,6 +110,14 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return 0; // never exec
         case SYS_getpid:
             return get_pid();
+        case SYS_sem_init:
+            return sys_sem_init((uint32_t) arg1);
+        case SYS_sem_destroy:
+            return sys_sem_destroy((uint32_t) arg1);
+        case SYS_sem_wait:
+            return sys_sem_wait((uint32_t) arg1);
+        case SYS_sem_post:
+            return sys_sem_post((uint32_t) arg1);
         default:
             return (uint32_t) -1;
     }

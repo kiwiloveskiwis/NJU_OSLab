@@ -14,6 +14,7 @@ enum {
     PCB_SLEEPING,
     PCB_RUNNABLE,
     PCB_RUNNING,
+    PCB_BLOCKED,
     PCB_NOT_RUNNABLE
 };
 
@@ -24,6 +25,7 @@ struct PCB {
     uint32_t runned_time;
     uint32_t wakeup_time;
     uintptr_t pcb_pgdir;
+    uint32_t wait_sem;
     uint8_t kstack[KSTACK_SIZE];
     struct Trapframe tf;        // follows kstack & be the last
 };

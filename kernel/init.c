@@ -19,6 +19,7 @@ extern void main_loop();
 
 uintptr_t userprog_load(uint32_t offset) {
     pcb_page_init(user_pcbs[0].pid); // save in process 0
+
     alloc_page(USER_START, PTE_P | PTE_W | PTE_U, 0);
 
 	printk("Loading...%s\n", __func__);
