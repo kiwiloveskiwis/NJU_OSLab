@@ -19,6 +19,7 @@ void pcb_init_p0(struct PCB *pcb, uintptr_t esp, uintptr_t eip, uint32_t eflags)
         user_pcbs[i].status = PCB_FREE;
         user_pcbs[i].runned_time = 0;
         user_pcbs[i].pid = i;
+        user_pcbs[i].wait_sem = NOT_WAITING_SEM;     // not waiting for any sem
     }
     my_assert(pcb->pid == 0);
     pcb->status = PCB_RUNNING;

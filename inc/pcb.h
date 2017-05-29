@@ -7,14 +7,12 @@
 
 #define KSTACK_SIZE 4096
 #define UPCB_NUM 64
-
-
+#define NOT_WAITING_SEM -1
 enum {
     PCB_FREE = 0,
     PCB_SLEEPING,
     PCB_RUNNABLE,
     PCB_RUNNING,
-    PCB_BLOCKED,
     PCB_NOT_RUNNABLE
 };
 

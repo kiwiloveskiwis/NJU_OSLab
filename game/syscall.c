@@ -115,5 +115,18 @@ void sys_sleep(uint32_t time) {
     do_syscall1(SYS_sleep, time);
 }
 
+int sys_sem_init(int sem) {
+    return do_syscall1(SYS_sem_init, sem);
+}
 
+int sys_sem_post(int sem) {
+    return do_syscall1(SYS_sem_post, sem);
+}
 
+int sys_sem_wait(int sem) {
+    return do_syscall1(SYS_sem_wait, sem);
+}
+
+int sys_sem_destroy(int sem) {
+    return do_syscall1(SYS_sem_destroy, sem);
+}

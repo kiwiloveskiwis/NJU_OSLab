@@ -29,7 +29,7 @@ void sys_display(uint8_t *buffer) {
 void sys_sleep(uint32_t time) {
     printk("Sys sleeping\n");
     user_pcbs[get_pid()].status = PCB_SLEEPING;
-    user_pcbs[get_pid()].wakeup_time = time;
+    user_pcbs[get_pid()].wakeup_time = sys_runned_time + time;
     sched_process();
     // TODO
 }
@@ -89,7 +89,6 @@ uint32_t syscall_handler(struct Trapframe *tf) {
         case SYS_fork:
             return sys_fork();
         case SYS_timer:
-            printk("SYS_timer: eip == 0x%x\n", tf->tf_eip);
             sys_timer((void (*)(void)) arg1);
             return 0;
         case SYS_keyboard:

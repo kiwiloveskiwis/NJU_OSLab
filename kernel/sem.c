@@ -25,9 +25,10 @@ int sys_sem_destroy(int sem) {
 int sys_sem_wait(int sem) {
     if (sem_pool[sem].count == 0) {
         user_pcbs[get_pid()].wait_sem = sem;
-        user_pcbs[get_pid()].status = PCB_BLOCKED;
-        sched_process();
+        user_pcbs[get_pid()].status = PCB_SLEEPING;
+        sched_process();       // no return
     }
+    // else
     sem_pool[sem].count--;
     return E_SUCCESS;
 }

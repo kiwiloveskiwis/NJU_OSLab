@@ -10,8 +10,12 @@ void sched_process(){ // change to another process
 //        if(i < 3) printk("Process %d: status = %d \n", i, user_pcbs[i].status);
         if(user_pcbs[i].status == PCB_RUNNABLE) {
             printk("%s: Runnable process: %d\n", __FILE__ ,i);
-            pcb_exec(&user_pcbs[i]); // no return TODO: test it
+            pcb_exec(&user_pcbs[i]); // no return
             panic("sched_process returned;");
+        } else if(user_pcbs[i].status == PCB_SLEEPING
+                  && user_pcbs[i].wakeup_time < sys_runned_time
+                    && user_pcbs[i].wait_sem == NOT_WAITING_SEM ) {
+            pcb_exec(&user_pcbs[i]); // no return
         }
     }
 

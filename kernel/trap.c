@@ -107,6 +107,7 @@ void trap(struct Trapframe *tf) {
             tf->tf_regs.reg_eax = syscall_handler(tf);
             break;
         case IRQ_OFFSET + IRQ_TIMER:
+            sys_runned_time++;
             user_pcbs[get_pid()].runned_time++;
             if (do_timer != NULL) do_timer();
             break;

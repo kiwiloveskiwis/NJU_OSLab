@@ -86,6 +86,9 @@ struct UTrapframe {
     uintptr_t utf_esp;
 } __attribute__((packed));
 
+
+uint32_t  sys_runned_time;
+
 #endif /* !__ASSEMBLER__ */
 
 #endif /* !JOS_INC_TRAP_H */
