@@ -4,6 +4,7 @@
 #include <inc/syscall.h>
 #include <inc/pmap.h>
 #include <inc/pcb.h>
+#include <inc/sched.h>
 
 //
 struct Segdesc gdt[6] =
@@ -109,6 +110,11 @@ void trap(struct Trapframe *tf) {
         case IRQ_OFFSET + IRQ_TIMER:
             sys_runned_time++;
             user_pcbs[get_pid()].runned_time++;
+            if(sys_runned_time > sys_last_time + SCHED_TIME_FREQ) {
+                sys_last_time = sys_runned_time;
+                sys_sleep(1);
+                sched_process();
+            }
             if (do_timer != NULL) do_timer();
             break;
         case IRQ_OFFSET + IRQ_KBD: {

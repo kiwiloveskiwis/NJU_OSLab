@@ -39,6 +39,9 @@
 #define IRQ_IDE         14
 #define IRQ_ERROR       19
 
+
+#define SCHED_TIME_FREQ  0x60
+
 #ifndef __ASSEMBLER__
 
 #include <inc/types.h>
@@ -88,6 +91,7 @@ struct UTrapframe {
 
 
 uint32_t  sys_runned_time;
+uint32_t  sys_last_time;
 
 #endif /* !__ASSEMBLER__ */
 

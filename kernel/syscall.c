@@ -27,7 +27,7 @@ void sys_display(uint8_t *buffer) {
 }
 
 void sys_sleep(uint32_t time) {
-    printk("Sys sleeping\n");
+    printk("sys_sleeping, pid = %d\n", get_pid());
     user_pcbs[get_pid()].status = PCB_SLEEPING;
     user_pcbs[get_pid()].wakeup_time = sys_runned_time + time;
     sched_process();
@@ -109,8 +109,8 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return 0; // never exec
         case SYS_getpid:
             return get_pid();
-        case SYS_sem_init:
-            return sys_sem_init((uint32_t) arg1);
+        case SYS_sem_open:
+            return sys_sem_open((uint32_t) arg1, (uint32_t) arg2);
         case SYS_sem_destroy:
             return sys_sem_destroy((uint32_t) arg1);
         case SYS_sem_wait:

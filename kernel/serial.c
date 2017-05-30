@@ -15,8 +15,9 @@ void init_serial() {
 int is_serial_idle() {
    return inb(PORT + 5) & 0x20;
 }
-void serial_printc(char c) {
+int serial_printc(char c) {
 	while(!is_serial_idle())
 		;
 	outb(PORT, c);
+    return 1; // 1 byte
 }

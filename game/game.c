@@ -117,24 +117,34 @@ bool check_win() {
 	return TRUE;
 }
 
-static inline void test_printk();
-static void test_process_0();
-static void test_process_1();
+//static inline int test_printk();
+//static void test_father();
+//static void test_child();
 
 int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
-    // sys_sleep(0x1000);
-//    int new_pid = sys_fork();
-//    if (new_pid != 0) {
-//		printk("Parent: my child's pid = %d and I'm going to sleep.\n", new_pid);
-//		sys_exit();
-//	} // main process sleep
 
-//	else test_process0();
-	if(sys_fork() == 0) { // child
-		test_process_0();
-	} else test_process_1(); // father
+    int sem_id = sys_sem_open(0, 2);
+
+    int child_num = 6, pid;
+
+    for(int i = 0; i < child_num; i ++) {
+        if ((pid = sys_fork()) == 0) { // child, pid = 1
+            break;
+        }
+    }
+    if(pid != 0) {  // Father
+        for(;;);
+        printk("\nParent: All children have exited.\n");
+    } else {        // Child
+        sys_sem_wait(sem_id);
+        printk("Child(%d) is in critical section.\n", sys_getpid());
+        sys_sleep(1);
+        sys_sem_post(sem_id);
+
+    }
+
 	while(true) {
 		/* do nothing */
 	}
@@ -145,16 +155,18 @@ int main() {
     panic("main_loop returns");
 }
 
-// Unrelated to game itself
-void test_process_0(){
+//// Unrelated to game itself
+//void test_father(){
+//	printk("current pid = %d \n", sys_getpid());
+//	test_printk();
+//}
+//
+//void test_child() {
+//	// test_printk();
+//}
 
-}
-
-void test_process_1() {
-
-}
-
-static inline void test_printk() {
+static inline int test_printk() {
+	int count = 0;
 	printk("Printk test begin...\n");
 	printk("the answer should be:\n");
 	printk("#######################################################\n");
@@ -176,5 +188,6 @@ static inline void test_printk() {
 	printk("%d, %d, %d, %d, %d, %d\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
 	printk("%x, %x, %x, %x, %x, %x\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
 	printk("=======================================================\n");
-	printk("Test end!!! Good luck!!!\n");
+	count += printk("Test end!!! Good luck!!!\n");
+	return count;
 }

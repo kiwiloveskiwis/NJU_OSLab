@@ -38,7 +38,7 @@ void alloc_page(uintptr_t va, uint32_t flags, uint32_t pid) {
 }
 
 void pmap_copy(int dest_pid, int src_pid) { // copy to 0x10000000
-    printk("%s %d: curr_pgdir == 0x%x, should be 0x%x \n", __FILE__, __LINE__, rcr3(), user_pgdir[src_pid]);
+//    printk("%s %d: curr_pgdir == 0x%x, should be 0x%x \n", __FILE__, __LINE__, rcr3(), user_pgdir[src_pid]);
     // my_assert((pte_t) (rcr3() & ~0x3FF)== (pte_t)user_pgdir[src_pid]);
     pcb_page_init(dest_pid);
 

@@ -3,15 +3,16 @@
 
 
 char* convert(unsigned int, int);
-void puts(char* s);
+int puts(char* s);
 
 /* implement this function to support printk */
-void vfprintf(void (*printer)(char), const char *ctl, va_list arg) {
+int vfprintf(int (*printer)(char), const char *ctl, va_list arg) {
+	int count = 0;
 	for(; *ctl != '\0'; ctl ++) {
 		int32_t i;
 		char* s;
 		if (*ctl != '%') {
-			printer(*ctl);
+            count += printer(*ctl);
 		}
 		else switch(*(++ctl)) {
 			case 'd':
@@ -19,20 +20,21 @@ void vfprintf(void (*printer)(char), const char *ctl, va_list arg) {
 				if(i < 0) {
 					i = -i;
 					printer('-');
+                    count++;
 				}
-				puts(convert(i, 10));
+				count += puts(convert(i, 10));
 				break;
 			case 'x':
 				i = va_arg(arg, unsigned int);
-				puts(convert(i, 16));
+				count += puts(convert(i, 16));
 				break;
 			case 'c':
-				i = va_arg(arg, int);   
-				printer(i);
+				i = va_arg(arg, int);
+				count += printer(i);
 				break; 
 			case 's':
 				s = va_arg(arg, char *);       //Fetch string
-				puts(s);
+				count += puts(s);
 				break; 
 			default :
 				break;
@@ -46,15 +48,17 @@ void vfprintf(void (*printer)(char), const char *ctl, va_list arg) {
 	str = "() is not implemented!\n";
 	for(;*str != '\0'; str ++) printer(*str);
 	*/
+	return count;
 }
 
-extern void serial_printc(char);
+extern int serial_printc(char);
 
-void printk(const char *ctl, ...) {
+int printk(const char *ctl, ...) {
 	va_list arg;
 	va_start(arg, ctl);
 	vfprintf(serial_printc, ctl, arg);
 	va_end(arg);
+	return 0;
 }
 
 char *convert(unsigned int num, int base) { 
@@ -72,9 +76,11 @@ char *convert(unsigned int num, int base) {
     return(ptr); 
 }
 
-void puts(char* s) {
+int puts(char* s) {
+    int count = 0;
 	while(*s != '\0') {
-		serial_printc(*s);
+        count += serial_printc(*s);
 		s++;
 	}
+    return count;
 }

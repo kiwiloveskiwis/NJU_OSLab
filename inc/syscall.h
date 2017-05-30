@@ -17,7 +17,7 @@ enum {
     SYS_wait_intr,
     SYS_getpid,
     SYS_fork,
-    SYS_sem_init,
+    SYS_sem_open,
     SYS_sem_destroy,
     SYS_sem_wait,
     SYS_sem_post,
@@ -41,7 +41,7 @@ void sys_wait_intr();
 
 int sys_getpid();
 
-int sys_sem_init(int sem);
+int sys_sem_open(int sem, int value);
 
 int sys_sem_destroy(int sem);
 

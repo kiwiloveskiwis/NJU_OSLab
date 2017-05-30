@@ -10,7 +10,7 @@
 #include <inc/types.h>
 #include <inc/assert.h>
 
-void printk(const char *ctl, ...);
+int printk(const char *ctl, ...);
 
 #endif
 
