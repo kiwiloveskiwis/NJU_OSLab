@@ -21,6 +21,7 @@ enum {
     SYS_sem_destroy,
     SYS_sem_wait,
     SYS_sem_post,
+    SYS_mem_share,
 };
 
 void sys_vprintk(const char *ctl, va_list arg);
@@ -48,5 +49,7 @@ int sys_sem_destroy(int sem);
 int sys_sem_wait(int sem);
 
 int sys_sem_post(int sem);
+
+int sys_mem_share(int dest_pid, int src_pid, uint32_t va);
 
 #endif //OSLAB_SYSCALL_H

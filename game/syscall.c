@@ -130,3 +130,8 @@ int sys_sem_wait(int sem) {
 int sys_sem_destroy(int sem) {
     return do_syscall1(SYS_sem_destroy, sem);
 }
+
+
+int sys_mem_share(int dest_pid, int src_pid, uint32_t va){
+    return do_syscall3(SYS_mem_share, dest_pid, src_pid, va);
+}

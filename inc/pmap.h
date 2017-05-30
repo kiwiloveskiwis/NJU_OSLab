@@ -73,7 +73,7 @@ static inline struct PageInfo* pa2page(physaddr_t pa) {
 }
 
 
-void pmap_copy(int dest, int src);
+void pmap_init_and_copy(int dest, int src);
 
 static inline void*
 page2kva(struct PageInfo *pp)
@@ -84,7 +84,8 @@ page2kva(struct PageInfo *pp)
 //pte_t *pgdir_walk(pde_t *pgdir, const void *va, int create);
 
 
-void alloc_page(uintptr_t va, uint32_t flags, uint32_t pid);
+physaddr_t alloc_page(uintptr_t va, uint32_t flags, uint32_t pid);
 
+void pmap_copy_one_page(int dest_pid, int src_pid, uint32_t va);
 
 #endif //OSLAB_PMAP_H

@@ -17,7 +17,7 @@ extern void sched_process() __attribute__((noreturn));
 
 
 int sys_sem_open(int sem, int value) {
-    my_assert(sem >= 0 || sem < SEM_POOL_SIZE);
+    my_assert((sem >= 0 || sem < SEM_POOL_SIZE) && value > 0);
     sem_pool[sem].count = value;
     return sem;
 }
@@ -35,8 +35,7 @@ int sys_sem_wait(int sem) {
         user_pcbs[get_pid()].wait_sem = sem;
         user_pcbs[get_pid()].status = PCB_SLEEPING;
         sched_process();       // no return
-    }
-    // else
+    } // else
     sem_pool[sem].count--;
     return E_SUCCESS;
 }

@@ -27,7 +27,7 @@ void sys_display(uint8_t *buffer) {
 }
 
 void sys_sleep(uint32_t time) {
-    printk("sys_sleeping, pid = %d\n", get_pid());
+//    printk("sys_sleeping, pid = %d\n", get_pid());
     user_pcbs[get_pid()].status = PCB_SLEEPING;
     user_pcbs[get_pid()].wakeup_time = sys_runned_time + time;
     sched_process();
@@ -61,7 +61,7 @@ uint32_t sys_fork() {
     user_pcbs[new_pid].pid = new_pid; // avoid overlap
     user_pcbs[new_pid].status = PCB_RUNNABLE;
     user_pcbs[new_pid].tf.tf_regs.reg_eax = 0; // return 0
-    pmap_copy(new_pid, old_pid);
+    pmap_init_and_copy(new_pid, old_pid);
 
     printk("%s: original_pid = %d, new_pid = %d\n", __func__, old_pid, new_pid);
     printk("Original eip == 0x%x\n", user_pcbs[old_pid].tf.tf_eip); // ﻿Original eip == 0x80488D9 is wrong
@@ -70,6 +70,11 @@ uint32_t sys_fork() {
 
 __attribute__((noreturn)) void sys_crash() {
     for (;;) __asm __volatile("cli; hlt");
+}
+
+int sys_mem_share(int dest_pid, int src_pid, uint32_t va) {
+    pmap_copy_one_page(dest_pid, src_pid, va);
+    return E_SUCCESS;
 }
 
 uint32_t syscall_handler(struct Trapframe *tf) {
@@ -117,6 +122,8 @@ uint32_t syscall_handler(struct Trapframe *tf) {
             return sys_sem_wait((uint32_t) arg1);
         case SYS_sem_post:
             return sys_sem_post((uint32_t) arg1);
+        case SYS_mem_share:
+            return sys_mem_share((uint32_t) arg1, (uint32_t) arg2, (uint32_t) arg3);
         default:
             return (uint32_t) -1;
     }

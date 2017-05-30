@@ -6,6 +6,7 @@
 #include <game/sel_words.h>
 #include <inc/syscall.h>
 #include <kernel/trap.h>
+#include <inc/pmap.h>
 
 #define FPS 30
 
@@ -121,13 +122,18 @@ bool check_win() {
 //static void test_father();
 //static void test_child();
 
+__attribute__((__aligned__(PGSIZE)))
+static uint8_t shared_mem[PGSIZE];
+
+
 int main() {
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
 
-    int sem_id = sys_sem_open(0, 2);
-
+    int sem_id = sys_sem_open(0, 2); 	// at most 2 processes are allowed
     int child_num = 6, pid;
+	int *shared_p = (int *)shared_mem; // ATTACH P TO A SHARED MEM
+	*shared_p = 0;
 
     for(int i = 0; i < child_num; i ++) {
         if ((pid = sys_fork()) == 0) { // child, pid = 1
@@ -136,11 +142,15 @@ int main() {
     }
     if(pid != 0) {  // Father
         for(;;);
-        printk("\nParent: All children have exited.\n");
+//        printk("\nParent: All children have exited.\n");
     } else {        // Child
+		uint32_t curr_pid = sys_getpid();
+		sys_mem_share(curr_pid, 0, (uint32_t)shared_mem);
         sys_sem_wait(sem_id);
-        printk("Child(%d) is in critical section.\n", sys_getpid());
+        printk("Child(%d) is in critical section.\n", curr_pid);
         sys_sleep(1);
+		*shared_p += curr_pid % 3;
+		printk("Child(%d) new value of *p=%d.\n", curr_pid, *shared_p);
         sys_sem_post(sem_id);
 
     }
@@ -156,38 +166,30 @@ int main() {
 }
 
 //// Unrelated to game itself
-//void test_father(){
-//	printk("current pid = %d \n", sys_getpid());
-//	test_printk();
-//}
-//
-//void test_child() {
-//	// test_printk();
-//}
 
-static inline int test_printk() {
-	int count = 0;
-	printk("Printk test begin...\n");
-	printk("the answer should be:\n");
-	printk("#######################################################\n");
-	printk("Hello, welcome to OSlab! I'm the body of the game. ");
-	printk("Bootblock loads me to the memory position of 0x100000, and Makefile also tells me that I'm at the location of 0x100000. ");
-	printk("~!@#$^&*()_+`1234567890-=...... ");
-	printk("Now I will test your printk: ");
-	printk("1 + 1 = 2, 123 * 456 = 56088\n0, -1, -2147483648, -1412505855, -32768, 102030\n0, ffffffff, 80000000, abcdef01, ffff8000, 18e8e\n");
-	printk("#######################################################\n");
-	printk("your answer:\n");
-	printk("=======================================================\n");
-	printk("%s %s%scome %co%s", "Hello,", "", "wel", 't', " ");
-	printk("%c%c%c%c%c! ", 'O', 'S', 'l', 'a', 'b');
-	printk("I'm the %s of %s. %s 0x%x, %s 0x%x. ", "body", "the game", "Bootblock loads me to the memory position of",
-		   0x100000, "and Makefile also tells me that I'm at the location of", 0x100000);
-	printk("~!@#$^&*()_+`1234567890-=...... ");
-	printk("Now I will test your printk: ");
-	printk("%d + %d = %d, %d * %d = %d\n", 1, 1, 1 + 1, 123, 456, 123 * 456);
-	printk("%d, %d, %d, %d, %d, %d\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
-	printk("%x, %x, %x, %x, %x, %x\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
-	printk("=======================================================\n");
-	count += printk("Test end!!! Good luck!!!\n");
-	return count;
-}
+//static inline int test_printk() {
+//	int count = 0;
+//	printk("Printk test begin...\n");
+//	printk("the answer should be:\n");
+//	printk("#######################################################\n");
+//	printk("Hello, welcome to OSlab! I'm the body of the game. ");
+//	printk("Bootblock loads me to the memory position of 0x100000, and Makefile also tells me that I'm at the location of 0x100000. ");
+//	printk("~!@#$^&*()_+`1234567890-=...... ");
+//	printk("Now I will test your printk: ");
+//	printk("1 + 1 = 2, 123 * 456 = 56088\n0, -1, -2147483648, -1412505855, -32768, 102030\n0, ffffffff, 80000000, abcdef01, ffff8000, 18e8e\n");
+//	printk("#######################################################\n");
+//	printk("your answer:\n");
+//	printk("=======================================================\n");
+//	printk("%s %s%scome %co%s", "Hello,", "", "wel", 't', " ");
+//	printk("%c%c%c%c%c! ", 'O', 'S', 'l', 'a', 'b');
+//	printk("I'm the %s of %s. %s 0x%x, %s 0x%x. ", "body", "the game", "Bootblock loads me to the memory position of",
+//		   0x100000, "and Makefile also tells me that I'm at the location of", 0x100000);
+//	printk("~!@#$^&*()_+`1234567890-=...... ");
+//	printk("Now I will test your printk: ");
+//	printk("%d + %d = %d, %d * %d = %d\n", 1, 1, 1 + 1, 123, 456, 123 * 456);
+//	printk("%d, %d, %d, %d, %d, %d\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
+//	printk("%x, %x, %x, %x, %x, %x\n", 0, 0xffffffff, 0x80000000, 0xabcedf01, -32768, 102030);
+//	printk("=======================================================\n");
+//	count += printk("Test end!!! Good luck!!!\n");
+//	return count;
+//}
