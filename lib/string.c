@@ -56,11 +56,22 @@ void _panic(const char* file, int line, const char* format, ...) {
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
-	for (int x; n; --n) if ((x = *s1 - *s2) || !(*s1 && *s2)) return x;
+	for (int i = 0; i < n; i++) {
+		if (s1[i] != s2[i]) return true;
+		if (!s1[i]) return 0;
+	}
 	return 0;
 }
 
 char *strncpy(char *dest, const char *src, size_t n) {
-	while (n--) if ((*dest++ = *src)) ++src;
+	bool eos = false;
+	for (int i = 0; i < n; ++i) {
+		if (eos) {
+			dest[i] = 0;
+		} else {
+			dest[i] = src[i];
+			if (!src[i]) eos = true;
+		}
+	}
 	return dest;
 }

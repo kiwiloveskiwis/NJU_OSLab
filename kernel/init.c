@@ -36,14 +36,11 @@ uintptr_t userprog_load(int pid, char *filename) {
 	my_assert(elfheader->e_magic == 0x464C457FU);
 	my_assert(elfheader->e_phoff + elfheader->e_phnum * sizeof(struct Proghdr) <= SECTSIZE * SECTCOUNT);
 
-	struct Proghdr *ph = (struct Proghdr *) (header + elfheader->e_phoff);
+	struct Proghdr *ph = (struct Proghdr *) (header + elfheader->e_phoff), *eph = ph + elfheader->e_phnum;
 	load_updir(pid);
-    for (int phnum = elfheader->e_phnum; phnum > 0; --phnum, ++ph) if (ph->p_type == 1) { // ELF_PROG_LOAD
-        my_assert(ph->p_pa >= 0x8000000 && ph->p_pa + ph->p_memsz <= 0x8400000);
-        if (ph->p_filesz) {
-            fs_lseek(fd, ph->p_offset, SEEK_SET);
-            my_assert(fs_read(fd, (void *) ph->p_pa, ph->p_filesz) == ph->p_filesz);
-        }
+    for (; ph < eph; ++ph) if (ph->p_type == 1 && ph->p_memsz) { // ELF_PROG_LOAD
+        fs_lseek(fd, ph->p_offset, SEEK_SET);
+        my_assert(fs_read(fd, (void *) ph->p_pa, ph->p_filesz) == ph->p_filesz);
         memset((void *) (ph->p_pa + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
     }
 	printk("Loading finished, e_entry(va) is 0x%x\n", __func__, elfheader->e_entry); // ﻿0xF01039E8

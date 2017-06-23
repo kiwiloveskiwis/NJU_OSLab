@@ -19,27 +19,24 @@ Dir dir;
 
 uint32_t state_bitmap, state_dir;
 
-const char filename_kernel[] = "kernel.bin";
-
 struct {
     int index;
     size_t offset;
     uint8_t buffer[SECTSIZE];
     INode inode;
-    uint32_t buffer_idx, inode_idx;
+    uint32_t buffer_idx, inode_idx, buffer_state, inode_state;
     bool opened, writable;
-    uint32_t buffer_state, inode_state;
-} fdPool[FDPOOL_SIZE];
+} fd_pool[FDPOOL_SIZE];
 
 void fs_init() {
-    ide_read(FSOFFSET_BITMAP, &bitmap, FSLENGTH_BITMAP);
-    ide_read(FSOFFSET_DIR, &dir, 1);
     state_bitmap = state_dir = USEFUL;
+    ide_read(FSOFFSET_DIR, &dir, 1);
+    ide_read(FSOFFSET_BITMAP, &bitmap, FSLENGTH_BITMAP);
 }
 
 int fs_flush() {
-    if (state_bitmap == NEED_WASHING) ide_write(FSOFFSET_BITMAP, &bitmap, FSLENGTH_BITMAP);
     if (state_dir == NEED_WASHING) ide_write(FSOFFSET_DIR, &dir, 1);
+    if (state_bitmap == NEED_WASHING) ide_write(FSOFFSET_BITMAP, &bitmap, FSLENGTH_BITMAP);
     state_bitmap = state_dir = USEFUL;
     return 0;
 }
@@ -53,81 +50,83 @@ uint32_t find_empty_inode() {
             j >>= 1;
             bit_count += 1;
         }
-        bitmap[i] |= 1 << bit_count;
         state_bitmap = NEED_WASHING;
+        bitmap[i] |= 1 << bit_count;
         return (i << 5) + bit_count;
     }
     panic(0, "No more empty inode available");
 }
 
 int fd_inode_flush(int fd) {
-    if (fdPool[fd].inode_state == NEED_WASHING) {
-        IDE_WRITE(fdPool[fd].inode_idx, &fdPool[fd].inode);
-        fdPool[fd].inode_state = USEFUL;
+    if (fd_pool[fd].inode_state == NEED_WASHING) {
+        fd_pool[fd].inode_state = USEFUL;
+        IDE_WRITE(fd_pool[fd].inode_idx, &fd_pool[fd].inode);
     }
     return 0;
 }
 
 void fd_set_inode(int fd) {
-    fdPool[fd].inode_idx = dir[fdPool[fd].index].inodeOffset = (uint32_t) find_empty_inode();
+    fd_pool[fd].inode_idx = dir[fd_pool[fd].index].inodeOffset = (uint32_t) find_empty_inode();
     state_dir = NEED_WASHING;
-    memset(&fdPool[fd].inode, 0, SECTSIZE);
-    fdPool[fd].inode_state = NEED_WASHING;
+    memset(&fd_pool[fd].inode, 0, SECTSIZE);
+    fd_pool[fd].inode_state = NEED_WASHING;
 }
 
 int fd_alloc_next_inode(int fd) {
-    fdPool[fd].inode.next = (uint32_t) find_empty_inode();
-    fdPool[fd].inode_state = NEED_WASHING;
+    fd_pool[fd].inode_state = NEED_WASHING;
+    fd_pool[fd].inode.next = (uint32_t) find_empty_inode();
     fd_inode_flush(fd);
-    fdPool[fd].inode_idx = fdPool[fd].inode.next;
-    memset(&fdPool[fd].inode, 0, SECTSIZE);
-    fdPool[fd].inode_state = NEED_WASHING;
+    fd_pool[fd].inode_state = NEED_WASHING;
+    fd_pool[fd].inode_idx = fd_pool[fd].inode.next;
+    memset(&fd_pool[fd].inode, 0, SECTSIZE);
     return 0;
 }
 
 int fd_inode_state_init(int fd) {
-    my_assert(fdPool[fd].offset % INODE_CAPACITY == 0);
-//    my_assert(fdPool[fd].inode_state == GARBAGE);
+    my_assert(fd_pool[fd].offset % INODE_CAPACITY == 0);
+//    my_assert(fd_pool[fd].inode_state == GARBAGE);
 
-    if (fdPool[fd].offset == 0) {
-        if (dir[fdPool[fd].index].inodeOffset == -1) fd_set_inode(fd);
-        else {
-            IDE_READ(fdPool[fd].inode_idx = dir[fdPool[fd].index].inodeOffset, &fdPool[fd].inode);
-            fdPool[fd].inode_state = USEFUL;
+    if (fd_pool[fd].offset == 0) {
+        if (dir[fd_pool[fd].index].inodeOffset == -1) {
+            fd_set_inode(fd);
+            return 0;
         }
+        fd_pool[fd].inode_state = USEFUL;
+        IDE_READ(fd_pool[fd].inode_idx = dir[fd_pool[fd].index].inodeOffset, &fd_pool[fd].inode);
         return 0;
     }
     // already started reading
-    if (fdPool[fd].inode.next == 0) fd_alloc_next_inode(fd);
-    else {
-        IDE_READ(fdPool[fd].inode_idx = fdPool[fd].inode.next, &fdPool[fd].inode);
-        fdPool[fd].inode_state = USEFUL;
+    if (fd_pool[fd].inode.next == 0) {
+        fd_alloc_next_inode(fd);
+        return 0;
     }
+    fd_pool[fd].inode_state = USEFUL;
+    IDE_READ(fd_pool[fd].inode_idx = fd_pool[fd].inode.next, &fd_pool[fd].inode);
     return 0;
 }
 
 int fd_buffer_flush(int fd) {
-    if (fdPool[fd].buffer_state == NEED_WASHING) {
-        IDE_WRITE(fdPool[fd].buffer_idx, &fdPool[fd].buffer);
+    if (fd_pool[fd].buffer_state == NEED_WASHING) {
+        IDE_WRITE(fd_pool[fd].buffer_idx, &fd_pool[fd].buffer);
     }
-    fdPool[fd].buffer_state = GARBAGE;
+    fd_pool[fd].buffer_state = GARBAGE;
     return 0;
 }
-// predicate: after this method, fdPool[fd].buffer is ready/dirty
+// predicate: after this method, fd_pool[fd].buffer is ready/dirty
 int fd_buffer_fetch(int fd) {
-    if (fdPool[fd].buffer_state == GARBAGE) {
-        my_assert(fdPool[fd].offset % SECTSIZE == 0);
-        if (fdPool[fd].offset % INODE_CAPACITY == 0) { // run out of current inode
+    if (fd_pool[fd].buffer_state == GARBAGE) {
+        my_assert(fd_pool[fd].offset % SECTSIZE == 0);
+        if (fd_pool[fd].offset % INODE_CAPACITY == 0) { // run out of current inode
             fd_inode_flush(fd);
-            fdPool[fd].inode_state = GARBAGE;
+            fd_pool[fd].inode_state = GARBAGE;
             fd_inode_state_init(fd);
         }
-        int index = (int) (fdPool[fd].offset / SECTSIZE % N_INODE_DATABLOCK);
-        if (fdPool[fd].inode.dataBlocks[index] == 0) {
-            fdPool[fd].buffer_idx = fdPool[fd].inode.dataBlocks[index] = find_empty_inode();
-            fdPool[fd].inode_state = NEED_WASHING;
-        } else IDE_READ(fdPool[fd].buffer_idx = fdPool[fd].inode.dataBlocks[index], &fdPool[fd].buffer);
-        fdPool[fd].buffer_state = USEFUL;
+        int index = (int) (fd_pool[fd].offset / SECTSIZE % N_INODE_DATABLOCK);
+        if (fd_pool[fd].inode.dataBlocks[index] == 0) {
+            fd_pool[fd].inode_state = NEED_WASHING;
+            fd_pool[fd].buffer_idx = fd_pool[fd].inode.dataBlocks[index] = find_empty_inode();
+        } else IDE_READ(fd_pool[fd].buffer_idx = fd_pool[fd].inode.dataBlocks[index], &fd_pool[fd].buffer);
+        fd_pool[fd].buffer_state = USEFUL;
     }
     return 0;
 }
@@ -137,9 +136,9 @@ int min(int a, int b) {
 }
 
 static void internal_open(int fd) {
-    fdPool[fd].opened = true;
-    fdPool[fd].offset = 0;
-    fdPool[fd].buffer_state = fdPool[fd].inode_state = GARBAGE;
+    fd_pool[fd].buffer_state = fd_pool[fd].inode_state = GARBAGE;
+    fd_pool[fd].offset = 0;
+    fd_pool[fd].opened = true;
 }
 
 int fs_open(const char *pathname, int flags) {
@@ -148,40 +147,39 @@ int fs_open(const char *pathname, int flags) {
     for (int i = 0; i < ENTRY_COUNT; ++i) {
         if (file_slot < 0 && !dir[i].fileName[0]) file_slot = i;
         if (!strncmp(pathname, dir[i].fileName, FILENAME_LENGTH))
-            for (int j = 0; j < FDPOOL_SIZE; ++j) if (!fdPool[j].opened) {
-                if (!(fdPool[j].index = i) && (fdPool[j].writable = (flags & O_RDWR) != 0)) return E_ACCESS;
+            for (int j = 0; j < FDPOOL_SIZE; ++j) if (!fd_pool[j].opened) {
+                if (!(fd_pool[j].index = i) && (fd_pool[j].writable = (flags & O_RDWR) != 0)) return E_ACCESS;
                 internal_open(j);
                 return j;
             }
     }
-    if (flags & O_CREAT) {
-        if (file_slot < 0) return E_DQUOT;
-        my_assert(strncmp(pathname, "kernel.bin", FILENAME_LENGTH) ? file_slot > 0 : file_slot == 0);
-        for (int j = 0; j < FDPOOL_SIZE; ++j) if (!fdPool[j].opened) {
-            fdPool[j].index = file_slot;
-            if(flags & O_RDWR) fdPool[j].writable = true;
-            internal_open(j);
-            strncpy(dir[file_slot].fileName, pathname, FILENAME_LENGTH);
-            dir[file_slot].fileSize = 0;
-            dir[file_slot].inodeOffset = (uint32_t) -1; // not allocated
-            state_dir = NEED_WASHING;
-            return j;
-        }
+    if (!(flags & O_CREAT)) return E_NOENT;
+    if (file_slot < 0) return E_DQUOT;
+    my_assert(strncmp(pathname, "kernel.bin", FILENAME_LENGTH) ? file_slot > 0 : file_slot == 0);
+    for (int j = 0; j < FDPOOL_SIZE; ++j) if (!fd_pool[j].opened) {
+        fd_pool[j].index = file_slot;
+        state_dir = NEED_WASHING;
+        if(flags & O_RDWR) fd_pool[j].writable = true;
+        internal_open(j);
+        dir[file_slot].inodeOffset = (uint32_t) -1; // not allocated
+        dir[file_slot].fileSize = 0;
+        strncpy(dir[file_slot].fileName, pathname, FILENAME_LENGTH);
+        return j;
     }
     return E_NOENT;
 }
 
 int fs_read(int fd, void *buf, int len) {
-    my_assert(fdPool[fd].opened);
-    len = min(len, (int) (dir[fdPool[fd].index].fileSize - fdPool[fd].offset));
+    my_assert(fd_pool[fd].opened);
+    len = min(len, (int) (dir[fd_pool[fd].index].fileSize - fd_pool[fd].offset));
     int n_read = 0;
     while (n_read < len) {
         fd_buffer_fetch(fd);
-        int offset = (int) (fdPool[fd].offset % SECTSIZE), count = min(len - n_read, SECTSIZE - offset);
-        memcpy((uint8_t *) buf + n_read, fdPool[fd].buffer + offset, (size_t) count);
+        int offset = (int) (fd_pool[fd].offset % SECTSIZE), count = min(len - n_read, SECTSIZE - offset);
+        fd_pool[fd].offset += count;
+        memcpy((uint8_t *) buf + n_read, fd_pool[fd].buffer + offset, (size_t) count);
         n_read += count;
-        fdPool[fd].offset += count;
-        if ((fdPool[fd].offset % SECTSIZE) == 0) {
+        if ((fd_pool[fd].offset % SECTSIZE) == 0) {
             fd_buffer_flush(fd);
         }
     }
@@ -189,19 +187,19 @@ int fs_read(int fd, void *buf, int len) {
 }
 
 int fs_write(int fd, const void *buf, int len) {
-    my_assert (fdPool[fd].opened);
-    my_assert (fdPool[fd].writable);
+    my_assert(fd_pool[fd].opened);
+    my_assert(fd_pool[fd].writable);
 
     int result = 0;
     while (result < len) {
+        int offset = (int) (fd_pool[fd].offset % SECTSIZE), count = min(len - result, SECTSIZE - offset);
         fd_buffer_fetch(fd);
-        int offset = (int) (fdPool[fd].offset % SECTSIZE), count = min(len - result, SECTSIZE - offset);
-        memcpy(fdPool[fd].buffer + offset, (uint8_t *) buf + result, (size_t) count);
-        fdPool[fd].buffer_state = NEED_WASHING;
+        fd_pool[fd].buffer_state = NEED_WASHING;
+        fd_pool[fd].offset += count;
+        memcpy(fd_pool[fd].buffer + offset, (uint8_t *) buf + result, (size_t) count);
         result += count;
-        fdPool[fd].offset += count;
-        if (dir[fdPool[fd].index].fileSize < fdPool[fd].offset) {
-            dir[fdPool[fd].index].fileSize = (uint32_t) fdPool[fd].offset;
+        if (dir[fd_pool[fd].index].fileSize < fd_pool[fd].offset) {
+            dir[fd_pool[fd].index].fileSize = (uint32_t) fd_pool[fd].offset;
             state_dir = NEED_WASHING;
         }
         if (offset + count == SECTSIZE) {
@@ -212,19 +210,19 @@ int fs_write(int fd, const void *buf, int len) {
 }
 
 int fs_lseek(int fd, int offset, int whence) {
-    my_assert(fdPool[fd].opened);
+    my_assert(fd_pool[fd].opened);
     switch (whence) {
         case SEEK_SET:
             fd_buffer_flush(fd);
             fd_inode_flush(fd);
-            fdPool[fd].offset = 0;
-            fdPool[fd].inode_state = GARBAGE;
+            fd_pool[fd].offset = 0;
+            fd_pool[fd].inode_state = GARBAGE;
             return 0;
         case SEEK_CUR:
-            fdPool[fd].offset += offset;
+            fd_pool[fd].offset += offset;   // todo; SIGH
             return 0;
         case SEEK_END:
-            fdPool[fd].offset += dir[fdPool[fd].index].fileSize + offset;
+            fd_pool[fd].offset += dir[fd_pool[fd].index].fileSize + offset; // not even bother to todo
             return 0;
 
         default: my_assert(0);
@@ -232,10 +230,10 @@ int fs_lseek(int fd, int offset, int whence) {
 }
 
 int fs_close(int fd) {
-    my_assert(fdPool[fd].opened);
-    fdPool[fd].opened = false;
-    my_assert(fd_buffer_flush(fd) == 0);
+    my_assert(fd_pool[fd].opened);
+    fd_pool[fd].opened = false;
     my_assert(fd_inode_flush(fd) == 0);
+    my_assert(fd_buffer_flush(fd) == 0);
     my_assert(fs_flush() == 0);
     return 0;
 }
