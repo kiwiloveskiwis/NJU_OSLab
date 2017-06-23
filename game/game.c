@@ -126,7 +126,8 @@ __attribute__((__aligned__(PGSIZE)))
 static uint8_t shared_mem[PGSIZE];
 
 
-int main() {
+int main() { // ﻿80488d9
+	printk("Welcome to our game");
 	sys_timer(timer_event);
 	sys_keyboard(keyboard_event);
 

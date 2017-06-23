@@ -6,3 +6,4 @@
 /.idea/
 peda-*
 .gdb_history
+bin/

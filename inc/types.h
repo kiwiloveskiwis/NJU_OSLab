@@ -36,9 +36,6 @@ typedef uint32_t size_t;
 // error return.
 typedef int32_t ssize_t;
 
-// off_t is used for file offsets and lengths.
-typedef int32_t off_t;
-
 // Efficient min and max operations
 #define MIN(_a, _b)						\
 ({								\

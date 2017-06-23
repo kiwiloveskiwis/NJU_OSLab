@@ -7,9 +7,9 @@
 #define IDE_DF		0x20
 #define IDE_ERR		0x01
 
+
 static int
-ide_wait_ready(bool check_error)
-{
+ide_wait_ready(bool check_error) {
     int r;
 
     while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY)
@@ -21,33 +21,43 @@ ide_wait_ready(bool check_error)
 }
 
 _Static_assert(!(SECTSIZE & (SECTSIZE - 1)), "SECTSIZE must be a power of 2!");
-int ide_read(void *dst, uint32_t offset, uint32_t count) {
-    my_assert(!(offset & 3));  // assert: aligned at 4 byte
-    my_assert(!(count & 3));
+int ide_read(uint32_t sec_idx, void *dst, size_t sec_num) {
+    my_assert(sec_num <= 256);
 
-    for (uint32_t i = offset & -SECTSIZE, end = offset + count; i < end;) {
+    ide_wait_ready(0);
+
+    outb(0x1F2, sec_num);
+    outb(0x1F3, sec_idx & 0xFF);
+    outb(0x1F4, (sec_idx >> 8) & 0xFF);
+    outb(0x1F5, (sec_idx >> 16) & 0xFF);
+    outb(0x1F6, 0xE0 | (((sec_idx>>24)&0x0F)));
+    outb(0x1F7, 0x20);	// CMD 0x20 means read sector
+
+    for (; sec_num > 0; sec_num--, dst += SECTSIZE) {
         int r;
-        ide_wait_ready(false);
-        uint32_t secno = i / SECTSIZE;
-        outb(0x1F2, 1);
-        outb(0x1F3, (uint8_t) secno);
-        outb(0x1F4, (uint8_t) (secno >> 8));
-        outb(0x1F5, (uint8_t) (secno >> 16));
-        outb(0x1F6, (uint8_t) (0xE0 | (secno >> 24)));
-        outb(0x1F7, 0x20);	// CMD 0x20 means read sector
-        if ((r = ide_wait_ready(1)) < 0) {
-            panic("(r & (IDE_DF|IDE_ERR)) != 0 r = %d", r);
-        }
-        int32_t n = offset - i;
-        if (n > 0) {
-            for (uint32_t j = 0; j < n; j += 4) inl(0x1F0); // seek
-            i += n;
-            n = SECTSIZE - n;
-        } else n = SECTSIZE;
-        if (n > end - i) n = end - i;
-        insl(0x1F0, dst, n / 4);
-        i += n;
-        dst += n;
+        if ((r = ide_wait_ready(1)) < 0)
+            return r;
+        insl(0x1F0, dst, SECTSIZE/4);
+    }
+
+    return 0;
+}
+
+int ide_write(uint32_t secno, const void *src, size_t sec_num) {
+
+    my_assert(sec_num <= 256);
+    ide_wait_ready(0);
+    outb(0x1F2, sec_num);
+    outb(0x1F3, secno & 0xFF);
+    outb(0x1F4, (secno >> 8) & 0xFF);
+    outb(0x1F5, (secno >> 16) & 0xFF);
+    outb(0x1F6, 0xE0 | ((secno>>24)&0x0F));
+    outb(0x1F7, 0x30);	// CMD 0x30 means write sector
+    for (; sec_num > 0; sec_num--, src += SECTSIZE) {
+        int r;
+        if ((r = ide_wait_ready(1)) < 0)
+            return r;
+        outsl(0x1F0, src, SECTSIZE/4);
     }
     return 0;
 }

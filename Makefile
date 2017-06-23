@@ -1,7 +1,20 @@
-BOOT   := boot.bin
-KERNEL := kernel.bin
-IMAGE  := disk.bin
-USER   := user.bin
+UTIL_DIR       := util
+BIN_DIR        := bin
+OBJ_DIR        := obj
+LIB_DIR        := lib
+BOOT_DIR       := boot
+KERNEL_DIR     := kernel
+USER_DIR       := game
+
+CFLAGS_SHORT := -Wall -Werror -Wfatal-errors
+CFLAGS_SHORT += -Wno-unknown-pragmas -Wno-error=unknown-pragmas
+CFLAGS_SHORT += -std=gnu11 -m32
+CFLAGS_SHORT += -I .
+
+BOOT   := $(BIN_DIR)/boot.bin
+KERNEL := $(BIN_DIR)/kernel.bin
+USER   := $(BIN_DIR)/user.bin
+IMAGE  := $(BIN_DIR)/disk.bin
 
 CC      := gcc
 LD      := ld
@@ -29,15 +42,14 @@ QEMU_DEBUG_OPTIONS += -s #GDB调试服务器: 127.0.0.1:1234
 
 GDB_OPTIONS := -ex "target remote 127.0.0.1:1234"
 GDB_OPTIONS += -ex "symbol $(KERNEL)"
-GDB_OPTIONS += -ex "b *0x0804830a"
+GDB_OPTIONS += -ex "b *0xf01017d7"
+GDB_OPTIONS += -ex "b *0x80488d9"
 
 
+MYFS_READ      := $(BIN_DIR)/read_myfs
+MYFS_WRITE     := $(BIN_DIR)/write_myfs
 
-OBJ_DIR        := obj
-LIB_DIR        := lib
-BOOT_DIR       := boot
-KERNEL_DIR     := kernel
-USER_DIR       := game
+
 
 OBJ_LIB_DIR    := $(OBJ_DIR)/$(LIB_DIR)
 OBJ_BOOT_DIR   := $(OBJ_DIR)/$(BOOT_DIR)
@@ -63,13 +75,17 @@ KERNEL_O += $(KERNEL_S:%.S=$(OBJ_DIR)/%.o)
 USER_C := $(shell find $(USER_DIR) -name "*.c")
 USER_O := $(USER_C:%.c=$(OBJ_DIR)/%.o)
 
-$(IMAGE): $(BOOT) $(KERNEL) $(USER)
-	$(DD) if=/dev/zero of=$(IMAGE) count=10000         > /dev/null # 准备磁盘文件
+all: $(IMAGE) $(MYFS_READ)
+
+$(IMAGE): $(BOOT) $(KERNEL) $(USER)  $(MYFS_WRITE)
+	@mkdir -p $(BIN_DIR)
+	$(DD) if=/dev/zero of=$(IMAGE) count=4099       > /dev/null # 准备磁盘文件
 	$(DD) if=$(BOOT) of=$(IMAGE) conv=notrunc          > /dev/null # 填充 boot loader
-	$(DD) if=$(KERNEL) of=$(IMAGE) seek=1 conv=notrunc > /dev/null # 填充 kernel, 跨过 mbr
-	$(DD) if=$(USER) of=$(IMAGE) seek=300 conv=notrunc > /dev/null 2> /dev/null
+	@$(MYFS_WRITE) $(IMAGE) kernel.bin                  < $(KERNEL)
+	@$(MYFS_WRITE) $(IMAGE) user.bin                    < $(USER)
 
 $(BOOT): $(BOOT_O)
+	@mkdir -p $(BIN_DIR)
 	$(LD) -e start -Ttext=0x7C00 -m elf_i386 -nostdlib -o $@.out $^
 	$(OBJCOPY) --strip-all --only-section=.text --output-target=binary $@.out $@
 	@rm $@.out
@@ -85,9 +101,11 @@ $(OBJ_BOOT_DIR)/%.o: $(BOOT_DIR)/%.c
 
 $(KERNEL): $(LD_SCRIPT)
 $(KERNEL): $(KERNEL_O) $(LIB_O)
+	@mkdir -p $(BIN_DIR)
 	$(LD) -m elf_i386 -T $(LD_SCRIPT) -nostdlib -o $@ $^ $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 $(USER): $(USER_O) $(LIB_O)
+	@mkdir -p $(BIN_DIR)
 	$(LD) -m elf_i386 -emain -nostdlib -o $@ $^ $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 
@@ -103,6 +121,10 @@ $(OBJ_KERNEL_DIR)/%.o: $(KERNEL_DIR)/%.[cS]
 $(OBJ_USER_DIR)/%.o: $(USER_DIR)/%.c
 	mkdir -p $(OBJ_DIR)/$(dir $<)
 	$(CC) $(CFLAGS) $< -o $@
+
+$(BIN_DIR)/%_myfs: $(UTIL_DIR)/%_myfs.c $(UTIL_DIR)/common.c $(OBJ_KERNEL_DIR)/fs.o
+	mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS_SHORT) $^ -o $@
 
 DEPS := $(shell find -name "*.d")
 -include $(DEPS)
@@ -125,9 +147,13 @@ gdb:
 submit:
 	git ls-files | tar zcf 151250104.tar.gz -T - .git
 
+fs-test: $(IMAGE) $(MYFS_READ)
+	$(MYFS_READ) $(IMAGE) kernel.bin > /tmp/test.bin && cmp -b $(KERNEL) /tmp/test.bin
+	$(MYFS_READ) $(IMAGE) user.bin   > /tmp/test.bin && cmp -b $(USER)   /tmp/test.bin
+
 clean:
+	@rm -rf $(BIN_DIR) 2> /dev/null
 	@rm -rf $(OBJ_DIR) 2> /dev/null
 	@rm -rf $(BOOT)    2> /dev/null
 	@rm -rf $(KERNEL)  2> /dev/null
 	@rm -rf $(IMAGE)   2> /dev/null
-

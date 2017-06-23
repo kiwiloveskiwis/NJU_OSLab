@@ -54,3 +54,13 @@ void _panic(const char* file, int line, const char* format, ...) {
 	printk("\n");
 	sys_crash();
 }
+
+int strncmp(const char *s1, const char *s2, size_t n) {
+	for (int x; n; --n) if ((x = *s1 - *s2) || !(*s1 && *s2)) return x;
+	return 0;
+}
+
+char *strncpy(char *dest, const char *src, size_t n) {
+	while (n--) if ((*dest++ = *src)) ++src;
+	return dest;
+}
